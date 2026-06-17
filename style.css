@@ -37,10 +37,20 @@ justify-content: flex-end;
 width: 25%;
 padding-right: 30px;
 }
-.banner1{
+
+.banner1 {
 display: flex;
 justify-content: center;
+width: 100%;
+overflow: hidden;
 }
+
+.escola-image {
+width: 100vw;       
+height: auto;       
+object-fit: cover;  
+}
+
 .estudante_titulo{
 padding: 50px;
 text-align: center;
@@ -49,9 +59,13 @@ text-align: center;
 .estudante-nome{
 text-align: center;
 }
-.estudante-imagem{
-width: 120px;
+
+.estudante-imagem {
+width: 220px;       
+height: 160px;      
+object-fit: cover;  
 }
+
 .estudante-icone{
 width: 38px;
 padding: 4px 8px;
