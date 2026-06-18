@@ -7,7 +7,7 @@ body{
 font-family: "Poppins", sans-serif;
 }
 header{
-background-color: #424e61;
+background-color: #42614b;
 color: white;
 width: 100%;
 padding: 20px;
@@ -106,3 +106,17 @@ padding: 12px 0;
 color: #ffffff;
 text-decoration: none;
 }
+
+.localizacao {
+text-align: center;
+padding: 40px;
+background-color: #102537;
+color: white;
+}
+.mapa-container iframe {
+display: block;
+margin: 0 auto;
+max-width: 100%;
+border-radius: 10px;
+}
+
