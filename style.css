@@ -1,4 +1,4 @@
-{
+*{
 margin: 0;
 padding: 0;
 box-sizing: border-box;
@@ -39,16 +39,14 @@ padding-right: 30px;
 }
 
 .banner1 {
-display: flex;
-justify-content: center;
 width: 100%;
 overflow: hidden;
 }
 
 .escola-image {
-width: 100vw;       
-height: auto;       
-object-fit: cover;  
+width: 100%;
+height: auto;
+display: block;
 }
 
 .estudante_titulo{
@@ -62,7 +60,7 @@ text-align: center;
 
 .estudante-imagem {
 width: 220px;       
-height: 160px;      
+height: 250px;      
 object-fit: cover;  
 }
 
