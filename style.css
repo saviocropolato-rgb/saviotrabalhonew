@@ -75,11 +75,12 @@ height: 250px;
 object-fit: cover;  
 }
 
+
 .estudante-icone {
-width: 38px;
+width: 65px;
 height: auto;
-object-fit: contain;
-padding: 4px 8px;
+display: block;
+margin: 15px auto 0;
 }
 
 .estudante{
