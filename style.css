@@ -7,7 +7,7 @@ body{
 font-family: "Poppins", sans-serif;
 }
 header{
-background-color: #245e34;
+background-color: #003B1C;
 color: white;
 width: 100%;
 padding: 20px;
@@ -43,7 +43,7 @@ width: 100%;
 overflow: hidden;
 display: flex;
 justify-content: center;
-background-color: #245e34;
+background-color: #003B1C;
 }
 
 .escola-image {
@@ -74,7 +74,7 @@ padding: 4px 8px;
 }
 
 .estudante{
-background-color: #58971d;
+background-color: #003B1C;
 padding: 24px 0;
 }
 
@@ -87,7 +87,7 @@ display: flex;
 justify-content: space-around;
 }
 .escola{
-background-image: linear-gradient(#245e34,#245e34);
+background-image: linear-gradient(#003B1C,#003B1C);
 color: white;
 display: flex;
 justify-content:center;
@@ -113,7 +113,7 @@ text-decoration: none;
 .localizacao {
 text-align: center;
 padding: 40px;
-background-color: #245e34;
+background-color: #003B1C;
 color: white;
 }
 .mapa-container iframe {
