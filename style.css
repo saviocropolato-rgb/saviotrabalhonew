@@ -43,8 +43,6 @@ overflow: hidden;
 display: flex;
 justify-content: center;
 background-color: #003B1C;
--webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 100%);
-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 100%);
 }
 
 .escola-image {
