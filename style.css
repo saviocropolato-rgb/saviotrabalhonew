@@ -52,11 +52,12 @@ display: block;
 object-fit: cover;
 }
 
-.estudante_titulo{
+.estudante_titulo {
+color: #ffffff;
 padding: 50px;
 text-align: center;
-
 }
+
 .estudante-nome{
 text-align: center;
 }
@@ -108,6 +109,8 @@ padding: 12px 0;
 color: #ffffff;
 text-decoration: none;
 }
+
+/* essse e a parte do mapa */
 
 .localizacao {
 text-align: center;
