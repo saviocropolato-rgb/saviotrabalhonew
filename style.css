@@ -84,7 +84,7 @@ display: flex;
 justify-content: space-around;
 }
 .escola{
-background-image: linear-gradient(#40A2E3,#7FC2EF);
+background-image: linear-gradient(#245e34,#245e34);
 color: white;
 display: flex;
 justify-content:center;
@@ -110,7 +110,7 @@ text-decoration: none;
 .localizacao {
 text-align: center;
 padding: 40px;
-background-color: #102537;
+background-color: #245e34;
 color: white;
 }
 .mapa-container iframe {
