@@ -58,8 +58,9 @@ padding: 50px;
 text-align: center;
 }
 
-.estudante-nome{
-text-align: center;
+.estudante-nome {
+color: #ffffff;
+ text-align: center;
 }
 
 .estudante-imagem {
