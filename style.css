@@ -70,8 +70,9 @@ object-fit: cover;
 width: 38px;
 padding: 4px 8px;
 }
+
 .estudante{
-background-image: background-color(#faae43);
+background-color: #ffe23f;
 padding: 24px 0;
 }
 
