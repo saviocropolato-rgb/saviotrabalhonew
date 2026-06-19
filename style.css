@@ -43,12 +43,14 @@ width: 100%;
 overflow: hidden;
 display: flex;
 justify-content: center;
+background-color: #245e34;
 }
 
 .escola-image {
-width: 100vw;
+width: 100%;
 height: auto;
 display: block;
+object-fit: cover;
 }
 
 .estudante_titulo{
