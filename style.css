@@ -60,13 +60,17 @@ object-fit: cover;
 
 .estudante_titulo {
 color: #000000;
-padding: 100px;
+padding: 60px 20px;
 text-align: center;
+font-size: 55px;
+font-weight: bold;
 }
 
 .estudante-nome {
 color: #000000;
 text-align: center;
+font-size: 22px;
+font-weight: 500;
 }
 
 .estudante-imagem {
