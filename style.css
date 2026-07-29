@@ -131,12 +131,11 @@ text-decoration: none;
 /* essse e a parte do mapa */
 
 .localizacao {
-margin-bottom: 5px;
 text-align: center;
 padding: 40px;
 background-color: #003B1C;
 color: #dfdb0f;
-margin-bottom: 5px; background-color: #000000;
+margin-bottom: 15px; 
 }
 
 .mapa-container iframe {
