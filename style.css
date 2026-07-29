@@ -134,8 +134,10 @@ text-decoration: none;
 text-align: center;
 padding: 40px;
 background-color: #003B1C;
-color: white;
+color: #dfdb0f;
+margin-bottom: 15px;
 }
+
 .mapa-container iframe {
 display: block;
 margin: 0 auto;
