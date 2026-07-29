@@ -144,13 +144,11 @@ border-radius: 10px;
 }
 /* parte do video*/
 
-.titulo-video {
-font-family: 'Segoe UI', Tahoma, Ganeva, Verdana, sans-serif;
-font-size: 40px;
-font-weight: bold;
-color: #003B1C;
+.container-video {
+background-color: #003B1C;
+padding: 25px 15px;
 text-align: center;
-margin-bottom:15px;
+border-radius: 12px;
 }
 
 .container-video iframe {
@@ -158,6 +156,4 @@ display: block;
 margin: 0 auto;
 max-width: 100%;
 border-radius: 10px;
-background-color: #003B1C;
-text-align: center;
 }
