@@ -144,6 +144,14 @@ border-radius: 10px;
 }
 /* parte do video*/
 
+.titulo-video {
+font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+font-size: 40px;
+font-weight: bold;
+text-align: center;
+margin-bottom: 15px;
+}
+
 .container-video {
 background-color: #003B1C;
 padding: 25px;
