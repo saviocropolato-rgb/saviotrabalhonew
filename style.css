@@ -4,25 +4,25 @@ padding: 0;
 box-sizing: border-box;
 }
 
-body{
+body {
 font-family: "Arial Black", sans-serif;
+background-color: #003B1C;
 }
 
-header{
+header {
 background-color: #003B1C;
 color: white;
 width: 100%;
-padding: 20px;
+padding: 20px 0; 
 }
 
-.cabecalho-itens{
-max-width: 1980px;
-margin: 0 auto;
+.cabecalho-itens {
+max-width: 100%;
+padding: 0 20px;
 display: flex;
 align-items: center;
 justify-content: space-between;
 }
-
 
 .cabecalho-imagem {
 width: 25%;
@@ -137,15 +137,18 @@ text-align: center;
 padding: 40px;
 background-color: #003B1C;
 color: #dfdb0f;
-margin-bottom: 15px; 
+margin: 0;
 }
+
 
 .mapa-container iframe {
 display: block;
 margin: 0 auto;
 max-width: 100%;
-border-radius: 10px;
+border-radius: 0; /* Removido o border-radius: 10px */
+border: none;
 }
+
 /* parte do video*/
 
 .container-video {
@@ -167,4 +170,25 @@ margin-bottom: 20px;
 .container-video iframe {
 max-width: 100%;
 border: none;
+}
+
+/*Reponsivo*/
+
+@media (max-width: 768px) {
+.cabecalho-itens, 
+.estudantes_todos {
+flex-direction: column;
+gap: 20px;
+}
+
+.cabecalho-imagem, .titulo_site, .sociais {
+width: 100%;
+text-align: center;
+justify-content: center;
+}
+
+iframe {
+width: 100%;
+height: 250px;
+}
 }
