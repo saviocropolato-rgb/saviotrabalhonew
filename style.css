@@ -97,12 +97,19 @@ padding: 24px 0;
 .estudante-div {
 text-align: center;
 padding: 24px 0;
+display: flex; 
+flex-direction: column; 
+align-items: center;
 }
+
 
 .estudantes_todos{
 display: flex;
-justify-content: space-around;
+justify-content: center;
+flex-wrap: wrap;
+gap: 20px;
 }
+
 
 .escola{
 background-color: #dfdb0f;
