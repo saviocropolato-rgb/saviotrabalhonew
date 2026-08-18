@@ -199,33 +199,91 @@
 </html>
 
 <!--PARDTE DO MENU-->
-
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Menu no Topo</title>
-<link rel="stylesheet" href="style.css">
+<title>Meu Site</title>
+<style>
+/* Estilo geral da barra preta */
+ul.navbar {
+list-style-type: none;
+margin: 0;
+padding: 0;
+overflow: hidden;
+background-color: #111111;
+}
+
+/* Alinha os botões lado a lado */
+ul.navbar li {
+float: left;
+}
+
+/* Estilo dos textos e botões */
+ul.navbar li a, .dropbtn {
+display: inline-block;
+color: white;
+text-align: center;
+padding: 14px 16px;
+text-decoration: none;
+}
+
+/* Cor quando passa o mouse por cima */
+ul.navbar li a:hover, .dropdown:hover .dropbtn {
+background-color: #04AA6D; /* Verde no hover */
+}
+
+/* Estrutura do Dropdown */
+li.dropdown {
+display: inline-block;
+}
+
+.dropdown-content {
+display: none;
+position: absolute;
+background-color: #f9f9f9;
+min-width: 160px;
+box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+}
+
+.dropdown-content a {
+color: black;
+padding: 12px 16px;
+text-decoration: none;
+display: block;
+text-align: left;
+}
+
+.dropdown-content a:hover {
+background-color: #ddd;
+}
+
+/* Mostra o menu suspenso ao passar o mouse */
+.dropdown:hover .dropdown-content {
+display: block;
+}
+</style>
 </head>
 <body>
-<nav class="navbar">
-<ul class="nav-links">
-<li><a href="#">Início</a></li>
-<li><a href="#">Sobre</a></li>
+
+  <!-- BARRA DE NAVEGAÇÃO -->
+<ul class="navbar">
+<li><a href="index.html">Início</a></li>
+<li><a href="sobre.html">Sobre</a></li>
 <li class="dropdown">
-<a href="#">Serviços ▾</a>
+<a href="javascript:void(0)" class="dropbtn">Serviços ▾</a>
 <div class="dropdown-content">
-<a href="#">Web Design</a>
-<a href="#">Desenvolvimento</a>
-<a href="#">Marketing</a>
+<a href="social.html">Web Design</a>
+<a href="social.html">Desenvolvimento</a>
 </div>
 </li>
-<li><a href="#">Contacto</a></li>
+<li><a href="contato.html">Contato</a></li>
 </ul>
-</nav>
-<main class="content">
+
+<div style="padding:20px;">
 <h2>Conteúdo da Página</h2>
-</main>
+<p>Seu site está pronto e estilizado!</p>
+</div>
+
 </body>
 </html>
