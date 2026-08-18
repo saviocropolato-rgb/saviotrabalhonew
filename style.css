@@ -183,8 +183,8 @@ border: none;
 
 /*Reponsivo*/
 
-@media (max-width: 768px)
-.cabecalho-itens, 
+@media (max-width: 768px){}
+.cabecalho-itens,
 .estudantes_todos {
 flex-direction: column;
 gap: 20px;
