@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Futebol 2D - Brasil vs Bots</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        canvas {
+            border: 4px solid #ffffff;
+            box-shadow: 0 0 20px rgba(0,0,0,0.6);
+            background-color: #27ae60;
+        }
+        .controls {
+            margin-top: 12px;
+            font-size: 15px;
+            color: #cccccc;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="field" width="800" height="500"></canvas>
+    <div class="controls">
+        <b>Movimento:</b> WASD ou Setas | <b>Remate/Passe:</b> Barra de Espaço
+    </div>
+
+    <script>
+        const canvas = document.getElementById("field");
+        const ctx = canvas.getContext("2d");
+
+        // Teclas pressionadas
+        const keys = {};
+        window.addEventListener("keydown", e => { keys[e.code] = true; });
+        window.addEventListener("keyup", e => { keys[e.code] = false; });
+
+        // Placar
+        let scoreBrasil = 0;
+        let scoreBots = 0;
+
+        // Balizas
+        const goalHeight = 130;
+        const goalY = (canvas.height - goalHeight) / 2;
+
+        // Bola
+        const ball = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            vx: 0,
+            vy: 0,
+            radius: 7,
+            holder: null,
+            cooldown: 0
+        };
+
+        // Classe Jogador
+        class Player {
+            constructor(x, y, team, isBot) {
+                this.x = x;
+                this.y = y;
+                this.startX = x;
+                this.startY = y;
+                this.team = team;
+                this.isBot = isBot;
+                this.radius = 13;
+                this.speed = 3.5;
+            }
+
+            reset() {
+                this.x = this.startX;
+                this.y = this.startY;
+            }
+        }
+
+        // Equipas (3 vs 3)
+        const teamBrasil = [
+            new Player(200, 150, 'brasil', false),
+            new Player(200, 350, 'brasil', false),
+            new Player(360, 250, 'brasil', false)
+        ];
+
+        const teamBots = [
+            new Player(600, 150, 'bot', true),
+            new Player(600, 350, 'bot', true),
+            new Player(440, 250, 'bot', true)
+        ];
+
+        let activePlayer = teamBrasil[2];
+
+        function resetPositions() {
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height / 2;
+            ball.vx = 0;
+            ball.vy = 0;
+            ball.holder = null;
+            teamBrasil.forEach(p => p.reset());
+            teamBots.forEach(p => p.reset());
+            activePlayer = teamBrasil[2];
+        }
+
+        function update() {
+            // Controlo da posse de bola da Seleção Brasileira
+            if (ball.holder && ball.holder.team === 'brasil') {
+                activePlayer = ball.holder;
+            } else if (!ball.holder) {
+                let minDist = Infinity;
+                teamBrasil.forEach(p => {
+                    let d = Math.hypot(p.x - ball.x, p.y - ball.y);
+                    if (d < minDist) {
+                        minDist = d;
+                        activePlayer = p;
+                    }
+                });
+            }
+
+            // Movimento do jogador ativo
+            let dx = 0, dy = 0;
+            if (keys["KeyW"] || keys["ArrowUp"]) dy -= 1;
+            if (keys["KeyS"] || keys["ArrowDown"]) dy += 1;
+            if (keys["KeyA"] || keys["ArrowLeft"]) dx -= 1;
+            if (keys["KeyD"] || keys["ArrowRight"]) dx += 1;
+
+            if (dx !== 0 || dy !== 0) {
+                let len = Math.hypot(dx, dy);
+                activePlayer.x += (dx / len) * activePlayer.speed;
+                activePlayer.y += (dy / len) * activePlayer.speed;
+            }
+
+            // Limites do campo
+            activePlayer.x = Math.max(activePlayer.radius, Math.min(canvas.width - activePlayer.radius, activePlayer.x));
+            activePlayer.y = Math.max(activePlayer.radius, Math.min(canvas.height - activePlayer.radius, activePlayer.y));
+
+            // IA dos Colegas de Equipa (Brasil)
+            teamBrasil.forEach(p => {
+                if (p !== activePlayer) {
+                    let targetX = p.startX + (ball.x - canvas.width / 2) * 0.25;
+                    let targetY = p.startY + (ball.y - p.startY) * 0.3;
+                    p.x += (targetX - p.x) * 0.05;
+                    p.y += (targetY - p.y) * 0.05;
+                }
+            });
+
+            // IA Inteligente dos Bots
+            teamBots.forEach(bot => {
+                let targetX, targetY;
+                if (ball.holder === bot) {
+                    targetX = 0;
+                    targetY = canvas.height / 2;
+
+                    // Remate automático do bot ao aproximar-se da baliza
+                    if (bot.x < 220) {
+                        ball.holder = null;
+                        ball.cooldown = 20;
+                        let angle = Math.atan2(canvas.height / 2 - bot.y, -bot.x);
+                        ball.vx = Math.cos(angle) * 8.5;
+                        ball.vy = Math.sin(angle) * 8.5;
+                    }
+                } else if (ball.holder && ball.holder.team === 'bot') {
+                    targetX = bot.startX + (ball.x - canvas.width / 2) * 0.3;
+                    targetY = bot.startY;
+                } else {
+                    targetX = ball.x;
+                    targetY = ball.y;
+                }
+
+                let angle = Math.atan2(targetY - bot.y, targetX - bot.x);
+                bot.x += Math.cos(angle) * (bot.speed * 0.82);
+                bot.y += Math.sin(angle) * (bot.speed * 0.82);
+            });
+
+            // Lógica da Bola
+            if (ball.cooldown > 0) ball.cooldown--;
+
+            if (ball.holder) {
+                ball.x = ball.holder.x;
+                ball.y = ball.holder.y;
+
+                if (keys["Space"] && ball.holder === activePlayer) {
+                    ball.holder = null;
+                    ball.cooldown = 18;
+                    let angle = Math.atan2(canvas.height / 2 - activePlayer.y, canvas.width - activePlayer.x);
+                    ball.vx = Math.cos(angle) * 9.5;
+                    ball.vy = Math.sin(angle) * 9.5;
+                }
+            } else {
+                ball.x += ball.vx;
+                ball.y += ball.vy;
+                ball.vx *= 0.96;
+                ball.vy *= 0.96;
+
+                if (ball.cooldown === 0) {
+                    const players = [...teamBrasil, ...teamBots];
+                    for (let p of players) {
+                        if (Math.hypot(p.x - ball.x, p.y - ball.y) < p.radius + ball.radius) {
+                            ball.holder = p;
+                            ball.vx = 0;
+                            ball.vy = 0;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Ressalto nas paredes superior e inferior
+            if (ball.y < ball.radius || ball.y > canvas.height - ball.radius) {
+                ball.vy *= -1;
+            }
+
+            // Deteção de Golos
+            if (ball.x >= canvas.width - ball.radius) {
+                if (ball.y > goalY && ball.y < goalY + goalHeight) {
+                    scoreBrasil++;
+                    resetPositions();
+                } else {
+                    ball.vx *= -1;
+                    ball.x = canvas.width - ball.radius;
+                }
+            }
+
+            if (ball.x <= ball.radius) {
+                if (ball.y > goalY && ball.y < goalY + goalHeight) {
+                    scoreBots++;
+                    resetPositions();
+                } else {
+                    ball.vx *= -1;
+                    ball.x = ball.radius;
+                }
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Marcações do campo
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.7)";
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.arc(canvas.width / 2, canvas.height / 2, 65, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Balizas
+            ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
+            ctx.fillRect(0, goalY, 15, goalHeight);
+            ctx.strokeRect(0, goalY, 15, goalHeight);
+            ctx.fillRect(canvas.width - 15, goalY, 15, goalHeight);
+            ctx.strokeRect(canvas.width - 15, goalY, 15, goalHeight);
+
+            // Seleção Brasileira (Camisola Amarela)
+            teamBrasil.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = "#f1c40f";
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = "#002776";
+                ctx.stroke();
+
+                if (p === activePlayer) {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius + 4, 0, Math.PI * 2);
+                    ctx.strokeStyle = "#ffffff";
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+            });
+
+            // Bots Adversários (Camisola Vermelha)
+            teamBots.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = "#e74c3c";
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = "#78281f";
+                ctx.stroke();
+            });
+
+            // Bola
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = "#ffffff";
+            ctx.fill();
+            ctx.strokeStyle = "#000000";
+            ctx.stroke();
+
+            // Placar
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "bold 22px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText(`BRASIL ${scoreBrasil} - ${scoreBots} BOTS`, canvas.width / 2, 35);
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+    </script>
+</body>
+</html>
