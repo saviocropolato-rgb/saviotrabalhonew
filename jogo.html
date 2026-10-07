@@ -1,4 +1,9 @@
-<style>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Pixel Soccer 2D</title>
+    <style>
         body {
             background-color: #1a1a1a;
             color: #ffffff;
@@ -18,7 +23,6 @@
 
         canvas {
             border: 4px solid #ffffff;
-            /* Força renderização pixelada estilosa */
             image-rendering: pixelated;
             image-rendering: crisp-edges;
             background-color: #2d8a4e;
@@ -52,7 +56,6 @@
         <span id="score-blue">AZUL: 0</span>
         <span id="score-red">VERMELHO: 0</span>
     </div>
-    <!-- Resolução interna baixa (320x240) para efeito Pixel Art autêntico -->
     <canvas id="gameCanvas" width="320" height="240" style="width: 800px; height: 600px;"></canvas>
 </div>
 
@@ -65,11 +68,13 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = false;
 
-// Estado dos Controles
 const keys = {};
 const mouse = { x: canvas.width / 2, y: canvas.height / 2 };
 
-window.addEventListener('keydown', e => { keys[e.code] = true; });
+window.addEventListener('keydown', e => {
+    keys[e.code] = true;
+    if (e.code === 'Space') e.preventDefault();
+});
 window.addEventListener('keyup', e => { keys[e.code] = false; });
 
 canvas.addEventListener('mousemove', e => {
@@ -80,11 +85,9 @@ canvas.addEventListener('mousemove', e => {
     mouse.y = (e.clientY - rect.top) * scaleY;
 });
 
-// Placar
 let scoreBlue = 0;
 let scoreRed = 0;
 
-// Bola
 const ball = {
     x: canvas.width / 2,
     y: canvas.height / 2,
@@ -94,22 +97,23 @@ const ball = {
     holder: null
 };
 
-// Classe dos Jogadores
 class Player {
     constructor(x, y, team, isGK = false) {
         this.homeX = x;
         this.homeY = y;
         this.x = x;
         this.y = y;
-        this.team = team; // 'blue' ou 'red'
+        this.team = team;
         this.isGK = isGK;
         this.speed = 1.3;
         this.radius = 5;
     }
 
     update() {
-        // Se este jogador está com a bola e é do time Azul, responde aos controles
-        if (ball.holder === this && this.team === 'blue') {
+        const controlledBlue = getActiveBluePlayer();
+        
+        // Controle manual do jogador Azul atualmente selecionado
+        if (this === controlledBlue) {
             let dx = 0, dy = 0;
             if (keys['KeyW'] || keys['ArrowUp']) dy -= 1;
             if (keys['KeyS'] || keys['ArrowDown']) dy += 1;
@@ -124,14 +128,36 @@ class Player {
             this.x += dx * this.speed;
             this.y += dy * this.speed;
         } else {
-            // IA simples de posicionamento e busca de bola
-            const targetX = (ball.holder === null && getClosestPlayer(ball, players[this.team]) === this)
-                ? ball.x
-                : this.homeX + (ball.x - canvas.width / 2) * 0.3;
+            // Comportamento de IA
+            let targetX = this.homeX;
+            let targetY = this.homeY;
 
-            const targetY = (ball.holder === null && getClosestPlayer(ball, players[this.team]) === this)
-                ? ball.y
-                : this.homeY + (ball.y - canvas.height / 2) * 0.3;
+            if (this.team === 'red') {
+                if (ball.holder === this) {
+                    // IA Vermelha ataca e chuta em direção ao gol azul
+                    targetX = 20;
+                    targetY = canvas.height / 2;
+                    if (this.x < 90) {
+                        const angle = Math.atan2((canvas.height / 2) - this.y, 10 - this.x);
+                        ball.vx = Math.cos(angle) * 4;
+                        ball.vy = Math.sin(angle) * 4;
+                        ball.holder = null;
+                    }
+                } else {
+                    const closestRed = getClosestPlayer(ball, players.red);
+                    if (closestRed === this && !ball.holder) {
+                        targetX = ball.x;
+                        targetY = ball.y;
+                    } else {
+                        targetX = this.homeX + (ball.x - canvas.width / 2) * 0.4;
+                        targetY = this.homeY + (ball.y - canvas.height / 2) * 0.4;
+                    }
+                }
+            } else {
+                // Jogadores azuis não selecionados
+                targetX = this.homeX + (ball.x - canvas.width / 2) * 0.3;
+                targetY = this.homeY + (ball.y - canvas.height / 2) * 0.3;
+            }
 
             const angle = Math.atan2(targetY - this.y, targetX - this.x);
             const dist = Math.hypot(targetX - this.x, targetY - this.y);
@@ -143,26 +169,21 @@ class Player {
             }
         }
 
-        // Limites do Campo
         this.x = Math.max(12, Math.min(canvas.width - 12, this.x));
         this.y = Math.max(12, Math.min(canvas.height - 12, this.y));
     }
 
     draw() {
-        // Corpo do jogador em Pixel Art
         ctx.fillStyle = this.team === 'blue' ? '#2980b9' : '#c0392b';
         ctx.fillRect(Math.round(this.x - 3), Math.round(this.y - 3), 7, 7);
 
-        // Cabeça / Pele
         ctx.fillStyle = '#f1c40f';
         ctx.fillRect(Math.round(this.x - 2), Math.round(this.y - 5), 5, 3);
 
-        // Calção
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(Math.round(this.x - 3), Math.round(this.y + 2), 7, 2);
 
-        // Destaque de seleção no jogador ativo
-        if (ball.holder === this) {
+        if (this === getActiveBluePlayer()) {
             ctx.strokeStyle = '#f1c40f';
             ctx.lineWidth = 1;
             ctx.strokeRect(Math.round(this.x - 5), Math.round(this.y - 7), 11, 13);
@@ -170,21 +191,20 @@ class Player {
     }
 }
 
-// Criando os Times (5 x 5)
 const players = {
     blue: [
-        new Player(30, 120, 'blue', true),   // Goleiro
-        new Player(80, 60, 'blue'),          // Defensor
-        new Player(80, 180, 'blue'),         // Defensor
-        new Player(130, 90, 'blue'),         // Meia
-        new Player(140, 150, 'blue')         // Atacante
+        new Player(30, 120, 'blue', true),
+        new Player(80, 60, 'blue'),
+        new Player(80, 180, 'blue'),
+        new Player(130, 90, 'blue'),
+        new Player(140, 150, 'blue')
     ],
     red: [
-        new Player(290, 120, 'red', true),   // Goleiro
-        new Player(240, 60, 'red'),          // Defensor
-        new Player(240, 180, 'red'),         // Defensor
-        new Player(190, 90, 'red'),          // Meia
-        new Player(180, 150, 'red')          // Atacante
+        new Player(290, 120, 'red', true),
+        new Player(240, 60, 'red'),
+        new Player(240, 180, 'red'),
+        new Player(190, 90, 'red'),
+        new Player(180, 150, 'red')
     ]
 };
 
@@ -201,16 +221,25 @@ function getClosestPlayer(target, playerList) {
     return closest;
 }
 
-// Mecânica de Passe e Chute
-window.addEventListener('keydown', e => {
-    if (e.code === 'Space' && ball.holder && ball.holder.team === 'blue') {
-        const p = ball.holder;
-        const angle = Math.atan2(mouse.y - p.y, mouse.x - p.x);
-        const force = 4.5;
+function getActiveBluePlayer() {
+    if (ball.holder && ball.holder.team === 'blue') {
+        return ball.holder;
+    }
+    const fieldPlayers = players.blue.filter(p => !p.isGK);
+    return getClosestPlayer(ball, fieldPlayers) || players.blue[0];
+}
 
-        ball.vx = Math.cos(angle) * force;
-        ball.vy = Math.sin(angle) * force;
-        ball.holder = null;
+window.addEventListener('keydown', e => {
+    if (e.code === 'Space') {
+        e.preventDefault();
+        const activePlayer = getActiveBluePlayer();
+        if (ball.holder === activePlayer) {
+            const angle = Math.atan2(mouse.y - activePlayer.y, mouse.x - activePlayer.x);
+            const force = 4.5;
+            ball.vx = Math.cos(angle) * force;
+            ball.vy = Math.sin(angle) * force;
+            ball.holder = null;
+        }
     }
 });
 
@@ -238,138 +267,7 @@ function updateBall() {
         return;
     }
 
-    // Física e desaceleração da bola
     ball.x += ball.vx;
     ball.y += ball.vy;
     ball.vx *= 0.95;
-    ball.vy *= 0.95;
-
-    // Colisão com as linhas do campo
-    if (ball.y - ball.radius < 10 || ball.y + ball.radius > canvas.height - 10) {
-        ball.vy *= -1;
-    }
-
-    // Checagem de Gol
-    if (ball.x < 10) {
-        if (ball.y > 80 && ball.y < 160) {
-            scoreRed++;
-            document.getElementById('score-red').innerText = `VERMELHO: ${scoreRed}`;
-            resetPositions();
-        } else {
-            ball.vx *= -1;
-        }
-    }
-
-    if (ball.x > canvas.width - 10) {
-        if (ball.y > 80 && ball.y < 160) {
-            scoreBlue++;
-            document.getElementById('score-blue').innerText = `AZUL: ${scoreBlue}`;
-            resetPositions();
-        } else {
-            ball.vx *= -1;
-        }
-    }
-
-    // Posse de Bola
-    const allPlayers = [...players.blue, ...players.red];
-    for (let p of allPlayers) {
-        let dist = Math.hypot(p.x - ball.x, p.y - ball.y);
-        if (dist < p.radius + ball.radius + 2) {
-            ball.holder = p;
-            break;
-        }
-    }
-
-    // Troca automática de controle se nenhum time estiver com a bola
-    if (!ball.holder) {
-        const closestBlue = getClosestPlayer(ball, players.blue);
-        if (closestBlue && Math.hypot(closestBlue.x - ball.x, closestBlue.y - ball.y) < 12) {
-            ball.holder = closestBlue;
-        }
-    }
-}
-
-function drawPitch() {
-    // Gramado em xadrez pixelado
-    ctx.fillStyle = '#2d8a4e';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.fillStyle = '#257540';
-    for (let i = 0; i < canvas.width; i += 32) {
-        ctx.fillRect(i, 0, 16, canvas.height);
-    }
-
-    // Linhas de Demarcação
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 1;
-
-    // Borda Externa
-    ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
-
-    // Linha Central e Círculo
-    ctx.beginPath();
-    ctx.moveTo(canvas.width / 2, 10);
-    ctx.lineTo(canvas.width / 2, canvas.height - 10);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.arc(canvas.width / 2, canvas.height / 2, 25, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Traves / Áreas
-    ctx.strokeRect(10, 70, 30, 100);
-    ctx.strokeRect(canvas.width - 40, 70, 30, 100);
-
-    // Redes
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(4, 80, 6, 80);
-    ctx.fillRect(canvas.width - 10, 80, 6, 80);
-}
-
-function drawBall() {
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(Math.round(ball.x - 2), Math.round(ball.y - 2), 4, 4);
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(Math.round(ball.x - 1), Math.round(ball.y - 1), 2, 2);
-}
-
-function drawCursor() {
-    // Mira do Mouse
-    ctx.strokeStyle = '#ffeb3b';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.arc(Math.round(mouse.x), Math.round(mouse.y), 4, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Linha de trajetória quando o jogador tem a bola
-    if (ball.holder && ball.holder.team === 'blue') {
-        ctx.strokeStyle = 'rgba(255, 235, 59, 0.4)';
-        ctx.beginPath();
-        ctx.moveTo(ball.holder.x, ball.holder.y);
-        ctx.lineTo(mouse.x, mouse.y);
-        ctx.stroke();
-    }
-}
-
-// Loop Principal do Jogo
-function gameLoop() {
-    // Atualização
-    updateBall();
-    players.blue.forEach(p => p.update());
-    players.red.forEach(p => p.update());
-
-    // Renderização
-    drawPitch();
-    players.blue.forEach(p => p.draw());
-    players.red.forEach(p => p.draw());
-    drawBall();
-    drawCursor();
-
-    requestAnimationFrame(gameLoop);
-}
-
-// Inicia o jogo
-gameLoop();
-</script>
-</body>
-</html>
+    ball.vy *= 0.95
