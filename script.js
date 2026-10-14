@@ -79,8 +79,28 @@ estilos.innerHTML = `
         border-radius: 4px;
         border: 1px dashed #fff;
     }
+    #placar {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 24px;
+        font-weight: bold;
+        color: #fff;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 5px 15px;
+        border-radius: 4px;
+        border: 2px solid #fff;
+        z-index: 5;
+    }
 `;
 document.head.appendChild(estilos);
+
+// Adiciona o elemento visual do placar dinamicamente
+const placarDiv = document.createElement("div");
+placarDiv.id = "placar";
+placarDiv.innerText = "BRASIL 0 x 0 RIVAL";
+gameContainer.appendChild(placarDiv);
 
 // ==========================================
 // 2. LÓGICA E ELEMENTOS DO JOGO (JAVASCRIPT)
@@ -88,191 +108,170 @@ document.head.appendChild(estilos);
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const menuInicial = document.getElementById("menu-inicial");
-const gameContainer = document.getElementById("game-container");
 const fsBtn = document.getElementById("fs-btn");
 
 let jogoRodando = false;
 let mouseX = 0, mouseY = 0;
+let golsAliado = 0, golsRival = 0;
 
-// Configuração física da bola e jogadores
-let bola = { x: 400, y: 250, r: 8, dono: null, velocidade: 0, dx: 0, dy: 0 };
+let teclas = {
+    w: false, a: false, s: false, d: false,
+    ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false
+};
+
+let bola = { x: 400, y: 250, r: 8, dono: null, velocidade: 0, dx: 0, dy: 0, timerChuteIA: 0 };
 let jogadores = [
-    // Time do Usuário (Azul)
-    { id: 1, x: 220, y: 130, time: "aliado", cor: "#1e88e5", corPele: "#ffdbac" },
-    { id: 2, x: 220, y: 370, time: "aliado", cor: "#1e88e5", corPele: "#f1c27d" },
-    { id: 3, x: 360, y: 250, time: "aliado", cor: "#1e88e5", corPele: "#e0ac69" },
-    // Time Adversário (Vermelho)
-    { id: 4, x: 580, y: 130, time: "rival", cor: "#e53935", corPele: "#ffdbac" },
-    { id: 5, x: 580, y: 370, time: "rival", cor: "#e53935", corPele: "#8d5524" },
-    { id: 6, x: 460, y: 250, time: "rival", cor: "#e53935", corPele: "#f1c27d" }
+    // Time do Usuário (Azul) - Posições de Origem fixadas para reorganização
+    { id: 1, x: 220, y: 130, ox: 220, oy: 130, time: "aliado", cor: "#1e88e5", corPele: "#ffdbac" },
+    { id: 2, x: 220, y: 370, ox: 220, oy: 370, time: "aliado", cor: "#1e88e5", corPele: "#f1c27d" },
+    { id: 3, x: 360, y: 250, ox: 360, oy: 250, time: "aliado", cor: "#1e88e5", corPele: "#e0ac69" },
+    // Time Adversário Inteligente (Vermelho)
+    { id: 4, x: 580, y: 130, ox: 580, oy: 130, time: "rival", cor: "#e53935", corPele: "#ffdbac" },
+    { id: 5, x: 580, y: 370, ox: 580, oy: 370, time: "rival", cor: "#e53935", corPele: "#8d5524" },
+    { id: 6, x: 460, y: 250, ox: 460, oy: 250, time: "rival", cor: "#e53935", corPele: "#f1c27d" }
 ];
 
-// O jogador 3 começa controlando a bola
 bola.dono = jogadores[2];
 
-// Rastreamento da posição do mouse
 canvas.addEventListener('mousemove', (e) => {
     const rect = canvas.getBoundingClientRect();
     mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
     mouseY = (e.clientY - rect.top) * (canvas.height / rect.height);
 });
 
-// Mecânica de chute ao apertar Espaço
 window.addEventListener('keydown', (e) => {
-    if (e.code === "Space" && bola.dono && bola.dono.time === "aliado") {
-        let dx = mouseX - bola.x;
-        let dy = mouseY - bola.y;
-        let dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist > 0) {
-            bola.dx = dx / dist;
-            bola.dy = dy / dist;
-            bola.velocidade = 8.5; // Força do passe
-            bola.dono = null;
+    if (e.key === 'w' || e.key === 'W') teclas.w = true;
+    if (e.key === 'a' || e.key === 'A') teclas.a = true;
+    if (e.key === 's' || e.key === 'S') teclas.s = true;
+    if (e.key === 'd' || e.key === 'D') teclas.d = true;
+    if (e.key in teclas) teclas[e.key] = true;
+
+    if (e.code === "Space") {
+        e.preventDefault();
+        if (bola.dono && bola.dono.time === "aliado") {
+            let dx = mouseX - bola.x;
+            let dy = mouseY - bola.y;
+            let dist = Math.sqrt(dx * dx + dy * dy);
+            
+            if (dist > 0) {
+                bola.dx = dx / dist;
+                bola.dy = dy / dist;
+                
+                // Determina se é um chute pro gol ou um passe rasteiro
+                if (mouseX > 700 && mouseY > 180 && mouseY < 320) {
+                    bola.velocidade = 12; // Chute forte pro gol!
+                } else {
+                    bola.velocidade = 8.5; // Passe controlado para os amigos
+                }
+                bola.dono = null;
+            }
         }
     }
 });
 
-// Inicia o Game Loop
+window.addEventListener('keyup', (e) => {
+    if (e.key === 'w' || e.key === 'W') teclas.w = false;
+    if (e.key === 'a' || e.key === 'A') teclas.a = false;
+    if (e.key === 's' || e.key === 'S') teclas.s = false;
+    if (e.key === 'd' || e.key === 'D') teclas.d = false;
+    if (e.key in teclas) teclas[e.key] = false;
+});
+
 function iniciarJogo() {
     menuInicial.style.display = "none";
     jogoRodando = true;
     gameLoop();
 }
 
+function reiniciarPosicoes() {
+    jogadores.forEach(p => {
+        p.x = p.ox;
+        p.y = p.oy;
+    });
+    bola.velocidade = 0;
+    bola.dx = 0; bola.dy = 0;
+    bola.x = 400; bola.y = 250;
+    bola.dono = jogadores[2];
+}
+
 function atualizar() {
+    // 1. Movimentação do Jogador Aliado Ativo
+    let jogadorAtivo = (bola.dono && bola.dono.time === "aliado") ? bola.dono : jogadores[2];
+    let moveX = 0, moveY = 0;
+    if (teclas.w || teclas.ArrowUp) moveY = -1;
+    if (teclas.s || teclas.ArrowDown) moveY = 1;
+    if (teclas.a || teclas.ArrowLeft) moveX = -1;
+    if (teclas.d || teclas.ArrowRight) moveX = 1;
+
+    if (moveX !== 0 || moveY !== 0) {
+        let comprimento = Math.sqrt(moveX * moveX + moveY * moveY);
+        jogadorAtivo.x += (moveX / comprimento) * 2.8;
+        jogadorAtivo.y += (moveY / comprimento) * 2.8;
+    }
+
+    // 2. Comportamento Físico da Bola
     if (bola.dono) {
-        // A bola gruda no pé do jogador atual
         bola.x = bola.dono.x + 6;
         bola.y = bola.dono.y + 12;
-
-        // Se o dono for o usuário, move o boneco na direção do mouse
-        if (bola.dono.time === "aliado") {
-            let dx = mouseX - bola.dono.x;
-            let dy = mouseY - bola.dono.y;
-            let dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist > 25) {
-                bola.dono.x += (dx / dist) * 2.2;
-                bola.dono.y += (dy / dist) * 2.2;
-            }
-        }
     } else {
-        // Movimentação livre da bola rolando campo afora
         bola.x += bola.dx * bola.velocidade;
         bola.y += bola.dy * bola.velocidade;
-        bola.velocidade *= 0.975; // Atrito/desaceleração gradual
-
+        bola.velocidade *= 0.98;
         if (bola.velocidade < 0.15) bola.velocidade = 0;
 
-        // Jogadores tentam pegar/interceptar a bola solta
+        // Interceptação por proximidade
         jogadores.forEach(p => {
             let dist = Math.sqrt(Math.pow(p.x - bola.x, 2) + Math.pow(p.y - bola.y, 2));
-            if (dist < 20) {
-                bola.dono = p;
-                bola.velocidade = 0;
-            }
+            if (dist < 20) { bola.dono = p; bola.velocidade = 0; }
         });
     }
 
-    // Inteligência Artificial (IA) simples para os rivais vermelhos correrem atrás da bola
-    jogadores.forEach(p => {
-        if (p.time === "rival" && bola.dono !== p) {
-            let dx = bola.x - p.x;
-            let dy = bola.y - p.y;
-            let dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist > 8) {
-                p.x += (dx / dist) * 1.4;
-                p.y += (dy / dist) * 1.4;
+    // 3. INTELIGÊNCIA ARTIFICIAL ADVERSÁRIA (DIFÍCIL)
+    if (bola.dono && bola.dono.time === "rival") {
+        // IA com posse de bola: Avança de forma inteligente e decide entre passar ou chutar no seu gol
+        let atacante = bola.dono;
+        let dxGol = 20 - atacante.x;
+        let dyGol = 250 - atacante.y;
+        let distGol = Math.sqrt(dxGol * dxGol + dyGol * dyGol);
+
+        if (distGol < 280) { // Perto do gol? Chuta!
+            bola.dx = dxGol / distGol;
+            bola.dy = dyGol / distGol;
+            bola.velocidade = 10;
+            bola.dono = null;
+        } else { // Longe? Avança carregando a bola ou passa para um parceiro livre
+            atacante.x -= 1.8;
+            atacante.y += (250 - atacante.y) * 0.01;
+            
+            // Chance de tocar para um companheiro de equipe melhor posicionado
+            bola.timerChuteIA++;
+            if(bola.timerChuteIA > 120) {
+                let outrosRivais = jogadores.filter(p => p.time === "rival" && p.id !== atacante.id);
+                let parceiro = outrosRivais[Math.floor(Math.random() * outrosRivais.length)];
+                let dxP = parceiro.x - bola.x;
+                let dyP = parceiro.y - bola.y;
+                let distP = Math.sqrt(dxP*dxP + dyP*dyP);
+                bola.dx = dxP / distP; bola.dy = dyP / distP;
+                bola.velocidade = 7.5; bola.dono = null;
+                bola.timerChuteIA = 0;
             }
         }
-
-        // Restringe os jogadores para não saírem das bordas do gramado
-        if (p.x < 25) p.x = 25; if (p.x > 775) p.x = 775;
-        if (p.y < 25) p.y = 25; if (p.y > 475) p.y = 475;
-    });
-}
-
-function desenhar() {
-    // Desenha o gramado verde escuro
-    ctx.fillStyle = "#2e7d32";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Linhas brancas pixeladas do campo de futebol
-    ctx.fillStyle = "rgba(255,255,255,0.35)";
-    ctx.fillRect(15, 15, canvas.width - 30, 4); // Cima
-    ctx.fillRect(15, canvas.height - 19, canvas.width - 30, 4); // Baixo
-    ctx.fillRect(15, 15, 4, canvas.height - 30); // Esquerda
-    ctx.fillRect(canvas.width - 19, 15, 4, canvas.height - 30); // Direita
-    ctx.fillRect(canvas.width / 2 - 2, 15, 4, canvas.height - 30); // Centro dividido
-
-    // Círculo central do campo
-    ctx.strokeStyle = "rgba(255,255,255,0.35)";
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.arc(canvas.width / 2, canvas.height / 2, 55, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Trave Esquerda e Direita em branco sólido
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(2, 185, 13, 130);
-    ctx.fillRect(canvas.width - 15, 185, 13, 130);
-
-    // Desenha os Jogadores estilo Pixel Art (Blocos)
-    jogadores.forEach(p => {
-        ctx.fillStyle = "rgba(0,0,0,0.25)"; // Sombra sob o jogador
-        ctx.fillRect(p.x - 12, p.y + 14, 24, 5);
-
-        ctx.fillStyle = p.cor; // Corpo em formato quadrado uniforme
-        ctx.fillRect(p.x - 12, p.y - 4, 24, 18);
-
-        ctx.fillStyle = p.corPele; // Rosto quadrado superior
-        ctx.fillRect(p.x - 7, p.y - 15, 14, 11);
-
-        ctx.fillStyle = "#000000"; // Olhos simples de 2px
-        ctx.fillRect(p.x - 4, p.y - 11, 2, 3);
-        ctx.fillRect(p.x + 2, p.y - 11, 2, 3);
-
-        // Alvo/Indicador dourado no jogador controlado atualmente pelo usuário
-        if (bola.dono === p && p.time === "aliado") {
-            ctx.strokeStyle = "#ffeb3b";
-            ctx.lineWidth = 3;
-            ctx.strokeRect(p.x - 16, p.y - 19, 32, 38);
-        }
-    });
-
-    // Desenha a Bola Quadrada clássica de 8-bits
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(bola.x - bola.r, bola.y - bola.r, bola.r * 2, bola.r * 2);
-    ctx.fillStyle = "#000000"; // Detalhe central da bola
-    ctx.fillRect(bola.x - 2, bola.y - 2, 4, 4);
-
-    // Linha guia de mira para auxiliar o passe do usuário
-    if (bola.dono && bola.dono.time === "aliado") {
-        ctx.strokeStyle = "rgba(255, 235, 59, 0.45)";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(bola.x, bola.y);
-        ctx.lineTo(mouseX, mouseY);
-        ctx.stroke();
-    }
-}
-
-function gameLoop() {
-    if (!jogoRodando) return;
-    atualizar();
-    desenhar();
-    requestAnimationFrame(gameLoop);
-}
-
-// Controle de Janela Cheia (Fullscreen)
-function toggleFullscreen() {
-    if (!document.fullscreenElement) {
-        gameContainer.requestFullscreen?.() || gameContainer.webkitRequestFullscreen?.();
-        fsBtn.innerText = "SAIR TELA CHEIA";
     } else {
-        document.exitFullscreen?.() || document.webkitExitFullscreen?.();
-        fsBtn.innerText = "TELA CHEIA";
-    }
-}
-document.addEventListener('fullscreenchange', () => {
-    if (!document.fullscreenElement) fsBtn.innerText = "TELA CHEIA";
-});
+        // IA sem a bola: Faz marcação dinâmica por zona e persegue inteligentemente
+        jogadores.forEach(p => {
+            if (p.time === "rival") {
+                if (bola.dono && bola.dono.time === "aliado") {
+                    // Se você está avançando, um adversário te caça e os outros cercam as linhas de passe
+                    let distParaUsuario = Math.sqrt(Math.pow(bola.dono.x - p.x, 2) + Math.pow(bola.dono.y - p.y, 2));
+                    if(p.id === 6 || distParaUsuario < 180) {
+                        let dx = bola.x - p.x; let dy = bola.y - p.y;
+                        let dist = Math.sqrt(dx*dx + dy*dy);
+                        p.x += (dx / dist) * 1.9; p.y += (dy / dist) * 1.9;
+                    } else {
+                        // Voltar para cobrir sua zona de defesa original
+                        p.x += (p.ox - p.x) * 0.02; p.y += (p.oy - p.y) * 0.02;
+                    }
+                } else {
+                    // Bola rolando solta: o defensor mais próximo corre em direção a ela
+                    let dx = bola.x - p.x; let dy = bola.y - p.y;
+                    let dist = Math.sqrt(dx*dx + dy*dy);
