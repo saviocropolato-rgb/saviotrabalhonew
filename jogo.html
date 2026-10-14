@@ -47,9 +47,24 @@
 
 
 <!--jogo-->
-<script src="script.js"></script>
+<div id="game-container">
+<button id="fs-btn" onclick="toggleFullscreen()">TELA CHEIA</button>
 
+<div id="menu-inicial">
+<h2 style="color: #ffeb3b; font-size: 32px; margin-bottom: 5px;">PIXEL SOCCER</h2>
+<button class="btn" onclick="iniciarJogo()">INICIAR JOGO</button>
+<div class="controles">
+<strong>Controles:</strong><br>
+Espaço: Passa a bola | Mouse: Mira a direção
+</div>
+</div>
 
+<canvas id="gameCanvas" width="800" height="500"></canvas>
+</div>
+
+script src="script.js"></script>
+
+<!--roda pé-->
 
 <footer class="escola">
 <img class="logo_rodape" src="Gemini_Generated_Image_mjevhhmjevhhmjev.png" alt="Logo da Escola">
