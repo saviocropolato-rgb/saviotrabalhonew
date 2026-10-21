@@ -1,280 +1,227 @@
-// ==========================================
-// 1. INJEÇÃO DE CSS RETRO DIRETO VIA JAVASCRIPT
-// ==========================================
-const estilos = document.createElement("style");
-estilos.innerHTML = `
-    #game-container {
-        position: relative;
-        width: 800px;
-        height: 500px;
-        background: #1a4314;
-        margin: 30px auto;
-        box-shadow: 0 12px 35px rgba(0,0,0,0.6);
-        border: 6px solid #fff;
-        border-radius: 4px;
-        overflow: hidden;
-        font-family: 'Courier New', Courier, monospace;
-    }
-    canvas {
-        width: 100%;
-        height: 100%;
-        display: block;
-        image-rendering: pixelated;
-    }
-    #menu-inicial {
-        position: absolute;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(10, 35, 10, 0.92);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 10;
-        color: white;
-        text-align: center;
-    }
-    .btn {
-        background-color: #ffeb3b;
-        color: #000;
-        border: 4px solid #fff;
-        padding: 14px 28px;
-        font-size: 20px;
-        font-weight: bold;
-        font-family: inherit;
-        cursor: pointer;
-        box-shadow: 5px 5px 0px #000;
-        transition: transform 0.1s, background-color 0.2s;
-        margin: 15px 0;
-    }
-    .btn:hover {
-        background-color: #ffffff;
-        transform: scale(1.05);
-    }
-    .btn:active {
-        transform: scale(0.95);
-    }
-    #fs-btn {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        z-index: 15;
-        padding: 8px 16px;
-        font-size: 11px;
-        font-weight: bold;
-        background: #222;
-        color: #fff;
-        border: 2px solid #fff;
-        cursor: pointer;
-        box-shadow: 3px 3px 0px #000;
-    }
-    #fs-btn:hover {
-        background: #444;
-    }
-    .controles {
-        font-size: 14px;
-        color: #ddd;
-        line-height: 1.6;
-        background: rgba(0,0,0,0.4);
-        padding: 10px 20px;
-        border-radius: 4px;
-        border: 1px dashed #fff;
-    }
-    #placar {
-        position: absolute;
-        top: 15px;
-        left: 50%;
-        transform: translateX(-50%);
-        font-size: 24px;
-        font-weight: bold;
-        color: #fff;
-        background: rgba(0, 0, 0, 0.5);
-        padding: 5px 15px;
-        border-radius: 4px;
-        border: 2px solid #fff;
-        z-index: 5;
-    }
-`;
-document.head.appendChild(estilos);
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><title>Futebol Pixel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#dfe8d3;--fg:#17261a;--card:#fffdf4;--ac:#2f6fe0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10170f;--fg:#e6f0dc;--card:#1b2619}}
+:root[data-theme="dark"]{--bg:#10170f;--fg:#e6f0dc;--card:#1b2619}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:'Press Start 2P',monospace,sans-serif;font-size:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+#wrap{position:relative;width:min(96vw,calc((100vh - 90px)*1.739))}
+#hud{display:flex;justify-content:space-between;align-items:center;background:var(--card);border:4px solid var(--fg);padding:8px 12px;margin-bottom:8px;gap:8px}
+#sc{font-size:14px;color:var(--ac)}
+canvas{display:block;width:100%;image-rendering:pixelated;border:4px solid var(--fg);outline:none;cursor:crosshair;background:#2b5f31}
+#menu,#gl{position:absolute;left:0;right:0;bottom:0;top:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
+#menu{background:rgba(8,14,8,.88);color:#e6f0dc;padding:10px}
+#menu[hidden],#gl[hidden]{display:none}
+#menu h1{font-size:clamp(14px,3.4vw,24px);margin:0;color:#ffe14a;text-shadow:3px 3px 0 #b8322a}
+#menu p{margin:0;line-height:1.7;font-size:clamp(7px,1.5vw,10px)}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+button{font:inherit;font-size:clamp(9px,1.8vw,12px);padding:12px 16px;background:#ffe14a;color:#1a1a1a;border:0;cursor:pointer;box-shadow:0 5px 0 #a8871a,0 0 0 3px #1a1a1a;transition:transform .08s}
+button:hover{transform:translateY(-2px)}button:active{transform:translateY(3px);box-shadow:0 2px 0 #a8871a,0 0 0 3px #1a1a1a}
+button[data-l=medio]{background:#ff9f43;box-shadow:0 5px 0 #a8601a,0 0 0 3px #1a1a1a}
+button[data-l=dificil]{background:#ff5d5d;box-shadow:0 5px 0 #a82a2a,0 0 0 3px #1a1a1a}
+#gl{pointer-events:none;font-size:clamp(20px,6vw,48px);color:#ffe14a;text-shadow:4px 4px 0 #b8322a;animation:pop .5s ease-out}
+@keyframes pop{0%{transform:scale(.2) rotate(-8deg);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+</style></head><body>
+<div id="wrap">
+ <div id="hud"><span id="sc">0 x 0</span><span id="tm">2:00</span><span id="lv">MÉDIO</span></div>
+ <canvas id="c" width="320" height="184" tabindex="0"></canvas>
+ <div id="gl" hidden>GOOOL!</div>
+ <div id="menu">
+  <h1 id="mt">FUTEBOL PIXEL</h1>
+  <p id="mm">Escolha o nível do robô e jogue!</p>
+  <div class="row"><button data-l="facil">FÁCIL</button><button data-l="medio">MÉDIO</button><button data-l="dificil">DIFÍCIL</button></div>
+  <p>WASD / SETAS: mover<br>MOUSE: mirar<br>ESPAÇO: passar (sem bola: arrancada)<br>CLIQUE: chutar<br>ESC: menu</p>
+ </div>
+</div>
+<script>
+const W=320,H=184,PX=12,PY=12,PW=296,PH=160,PR=PX+PW,PB=PY+PH,CY=PY+PH/2,GH=44,K=1.3,SP=62;
+const cv=document.getElementById('c'),g=cv.getContext('2d');g.imageSmoothingEnabled=false;
+const $=i=>document.getElementById(i),menu=$('menu'),gl=$('gl');
+const LV={facil:{n:'FÁCIL',spd:.72,react:.55,err:.4,tk:.2,press:1,pred:0,lane:0,pass:.3,gk:.4},
+medio:{n:'MÉDIO',spd:.88,react:.3,err:.16,tk:.4,press:1,pred:.5,lane:.5,pass:.6,gk:.75},
+dificil:{n:'DIFÍCIL',spd:1,react:.12,err:.04,tk:.6,press:2,pred:1,lane:1,pass:.85,gk:1}};
+let AP=LV.medio,state='menu',score=[0,0],time=120,ctrl=null,gt=0,pk=0,DT=.016,T=[[],[]],all=[];
+const keys={},act={},mouse={x:PR-40,y:CY},ball={x:0,y:0,vx:0,vy:0,owner:null,tgt:null,last:null};
+const FM=[['gk',.03,.5],['d',.24,.3],['d',.24,.7],['a',.5,.28],['a',.5,.72]];
+const cl=(v,a,b)=>Math.max(a,Math.min(b,v)),dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),prm=p=>p.team?AP:LV.medio;
 
-// Adiciona o elemento visual do placar dinamicamente
-const gameContainer = document.getElementById("game-container");
-const placarDiv = document.createElement("div");
-placarDiv.id = "placar";
-placarDiv.innerText = "BRASIL 0 x 0 RIVAL";
-if (gameContainer) {
-    gameContainer.appendChild(placarDiv);
+function build(){T=[[],[]];FM.forEach((f,i)=>{for(let t=0;t<2;t++)T[t].push({team:t,i,role:f[0],hf:f[1],hy:f[2],x:0,y:0,vx:0,vy:0,dvx:0,dvy:0,fx:t?-1:1,fy:0,cd:0,tk:0,bo:0,dc:0,th:0,hold:0,tx:0,ty:0,an:Math.random()*9})});all=T[0].concat(T[1])}
+function home(p,ns){let x=p.team?PX+PW*(1-p.hf):PX+PW*p.hf,y=PY+PH*p.hy;
+ if(!ns&&p.role!=='gk'){x+=(ball.x-(PX+PR)/2)*.4;y+=(ball.y-CY)*.25}
+ return{x:cl(x,PX+4,PR-4),y:cl(y,PY+4,PB-4)}}
+function take(p){ball.owner=p;ball.tgt=null;ball.last=p;p.hold=0;if(p.team===0&&p.role!=='gk')ctrl=p}
+function reset(kt){act.pass=act.shot=false;
+ all.forEach(p=>{const h=home(p,true);p.x=h.x;p.y=h.y;p.vx=p.vy=p.dvx=p.dvy=0;p.cd=p.tk=0;p.hold=0;p.fx=p.team?-1:1;p.fy=0});
+ ball.x=(PX+PR)/2;ball.y=CY;ball.vx=ball.vy=0;ball.tgt=null;ball.owner=null;
+ const k=T[kt][3];k.x=ball.x-(kt?-6:6);k.y=CY;take(k)}
+function kick(p,x,y,s,e){const a=Math.atan2(y-p.y,x-p.x)+(Math.random()-.5)*2*e;
+ ball.owner=null;ball.tgt=null;ball.last=p;ball.vx=Math.cos(a)*s;ball.vy=Math.sin(a)*s;ball.x=p.x+Math.cos(a)*6;ball.y=p.y+Math.sin(a)*6;p.cd=.35}
+function doPass(p,t,e){const lx=t.x+t.vx*.35,ly=t.y+t.vy*.35,d=Math.hypot(lx-p.x,ly-p.y);kick(p,lx,ly,cl(d*K+45,95,230),e);ball.tgt=t}
+function sd(a,b,o){const dx=b.x-a.x,dy=b.y-a.y,l=dx*dx+dy*dy||1,u=cl(((o.x-a.x)*dx+(o.y-a.y)*dy)/l,0,1);return Math.hypot(a.x+dx*u-o.x,a.y+dy*u-o.y)}
+const clear=(a,b,os,r)=>os.every(o=>sd(a,b,o)>r);
+function move(p,x,y,s){const dx=x-p.x,dy=y-p.y,l=Math.hypot(dx,dy);p.dvx=l>1.5?dx/l*s:0;p.dvy=l>1.5?dy/l*s:0}
+
+/* ===== IA ===== */
+function carrier(p,A,d,opp){
+ const gx=d>0?PR:PX,fo=opp.filter(o=>o.role!=='gk'),dg=Math.hypot(gx-p.x,CY-p.y);
+ let ax=0,ay=0;for(const o of opp){const dx=p.x-o.x,dy=p.y-o.y,l=Math.hypot(dx,dy);if(l<26&&l>0){ax+=dx/l*(26-l);ay+=dy/l*(26-l)}}
+ let dx=gx-p.x,dy=CY-p.y;const l=Math.hypot(dx,dy)||1;dx=dx/l+ax*.05;dy=dy/l+ay*.05;
+ p.th-=DT;
+ if(p.th<=0){p.th=A.react*(.6+Math.random()*.8);
+  const kp=T[1-p.team][0],ty=kp.y<CY?CY+GH/2-5:CY-GH/2+5;
+  if(dg<100&&clear(p,{x:gx,y:ty},fo,5)){kick(p,gx,ty,250,A.err);return}
+  const press=opp.some(o=>dist(o,p)<22);let best=null,bs=0;
+  for(const t of T[p.team]){if(t===p||t.role==='gk')continue;const td=dist(t,p);
+   if(td<28||td>140||!clear(p,t,opp,6))continue;
+   const open=Math.min(...opp.map(o=>dist(o,t))),s=(t.x-p.x)*d+open*.8;
+   if(open>14&&s>bs){bs=s;best=t}}
+  if(best&&((press&&Math.random()<A.pass+.2)||(bs>45&&Math.random()<A.pass*.6))){doPass(p,best,A.err*.5);return}}
+ move(p,p.x+dx*40,p.y+dy*40,SP*A.spd*.93)}
+function support(p,A,d,opp){
+ const o=ball.owner,h=home(p);
+ if(p.role==='d'||A.lane<.3){move(p,h.x,h.y,SP*A.spd*.9);return}
+ p.th-=DT;
+ if(p.th<=0){p.th=.45;let bs=-9e9;
+  for(let k=0;k<7;k++){const c={x:cl(o.x+d*(14+Math.random()*50),PX+6,PR-6),y:PY+8+Math.random()*(PH-16)};
+   const op=Math.min(...opp.map(q=>dist(q,c))),
+   s=Math.min(op,40)+(clear(o,c,opp,6)?25:0)+(c.x-o.x)*d*.3-dist(c,p)*.15-(T[p.team].some(m=>m!==p&&dist(m,c)<24)?30:0);
+   if(s>bs){bs=s;p.tx=c.x;p.ty=c.y}}}
+ move(p,p.tx,p.ty,SP*A.spd*.95)}
+function defend(p,A,d,opp){
+ const c=ball.owner,og={x:d>0?PX:PR,y:CY},mine=T[p.team].filter(q=>q.role!=='gk'&&q!==ctrl).sort((a,b)=>dist(a,c)-dist(b,c)),r=mine.indexOf(p);
+ if(r>=0&&r<A.press){const l=Math.hypot(og.x-c.x,og.y-c.y)||1,k=A.pred?7:0;
+  move(p,c.x+c.vx*.2*A.pred+(og.x-c.x)/l*k,c.y+c.vy*.2*A.pred+(og.y-c.y)/l*k,SP*A.spd*(r?.95:1.03));return}
+ const h=home(p);
+ if(A.lane<.3){move(p,h.x,h.y,SP*A.spd*.9);return}
+ const ops=opp.filter(o=>o!==c&&o.role!=='gk'),m=ops[p.i%ops.length],ll=Math.hypot(og.x-m.x,og.y-m.y)||1,
+ gs={x:m.x+(og.x-m.x)/ll*12,y:m.y+(og.y-m.y)/ll*12},ln={x:m.x+(c.x-m.x)*.35,y:m.y+(c.y-m.y)*.35},w=A.lane>.8?.6:0;
+ move(p,gs.x+(ln.x-gs.x)*w,gs.y+(ln.y-gs.y)*w,SP*A.spd*.95)}
+function loose(p,A){
+ const tm=T[p.team].filter(q=>q.role!=='gk'&&q!==ctrl),b=ball;
+ let ch=tm.reduce((a,q)=>dist(q,b)<dist(a,b)?q:a);
+ if(b.tgt&&b.tgt.team===p.team&&b.tgt!==ctrl)ch=b.tgt;
+ if(p===ch){const t=dist(p,b)/(SP*A.spd),f=(1-Math.exp(-K*t))/K;
+  move(p,cl(b.x+b.vx*f*A.pred,PX,PR),cl(b.y+b.vy*f*A.pred,PY,PB),SP*A.spd*1.02);return}
+ const h=home(p);move(p,h.x,h.y,SP*A.spd*.9)}
+function keeper(p,A,d){
+ const b=ball,hx=(d>0?PX:PR)+d*7;
+ if(b.owner===p){p.hold+=DT;
+  if(p.hold>.8){const t=T[p.team].filter(q=>q.role!=='gk'&&clear(p,q,T[1-p.team],6)).sort((a,c)=>Math.abs(a.y-p.y)-Math.abs(c.y-p.y))[0]||T[p.team][1];doPass(p,t,.05)}
+  move(p,hx,p.y,0);return}
+ p.th-=DT;
+ if(p.th<=0){p.th=A.react*.5;let y=CY+(b.y-CY)*.35;
+  if(b.vx*d<-40){const t=(hx-b.x)/b.vx;if(t>0)y=b.y+b.vy*t}
+  p.ty=cl(y+(Math.random()-.5)*(1-A.gk)*30,CY-GH/2+2,CY+GH/2-2)}
+ let tx=hx,ty=p.ty||CY;
+ if(!b.owner&&A.gk>.5&&Math.abs(b.x-hx)<30&&Math.abs(b.y-CY)<GH&&Math.hypot(b.vx,b.vy)<70){tx=b.x;ty=b.y}
+ move(p,tx,ty,SP*A.spd)}
+
+/* ===== jogo ===== */
+function bestT(p){const a=Math.atan2(mouse.y-p.y,mouse.x-p.x);let r=null,bs=9;
+ for(const t of T[0]){if(t===p||t.role==='gk')continue;const d=dist(t,p);if(d<12)continue;
+  const ta=Math.atan2(t.y-p.y,t.x-p.x)-a,da=Math.abs(Math.atan2(Math.sin(ta),Math.cos(ta))),s=da+d*.0015;
+  if(da<.45&&s<bs){bs=s;r=t}}return r}
+function userPass(p){const t=bestT(p);if(t){doPass(p,t,0);ctrl=t}else kick(p,mouse.x,mouse.y,150,0)}
+function goal(t){score[t]++;state='goal';gt=1.8;pk=1-t;gl.textContent=t?'GOL DO ROBÔ!':'GOOOL!';gl.hidden=false;gl.style.animation='none';gl.offsetWidth;gl.style.animation=''}
+function endGame(){state='end';$('mt').textContent=score[0]>score[1]?'VOCÊ VENCEU!':score[0]<score[1]?'O ROBÔ VENCEU':'EMPATE';
+ $('mm').textContent=score[0]+' x '+score[1]+' — escolha o nível para jogar de novo';menu.hidden=false}
+function step(dt){
+ DT=dt;const b=ball,o=b.owner;
+ if(o&&o.team===0&&o.role!=='gk')ctrl=o;
+ else if(!o&&b.tgt&&b.tgt.team===0)ctrl=b.tgt;
+ else{const fs=T[0].filter(q=>q.role!=='gk'),n=fs.reduce((a,q)=>dist(q,b)<dist(a,b)?q:a);if(!ctrl||dist(ctrl,b)>dist(n,b)+10)ctrl=n}
+ if(act.pass){act.pass=false;if(b.owner===ctrl)userPass(ctrl);else if(ctrl.dc<=0){ctrl.bo=.3;ctrl.dc=1.1}}
+ if(act.shot){act.shot=false;if(b.owner===ctrl)kick(ctrl,mouse.x,mouse.y,265,0)}
+ for(const p of all){p.cd-=dt;p.tk-=dt;p.bo-=dt;p.dc-=dt;const d=p.team?-1:1;
+  if(p===ctrl){const x=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0),y=(keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0),l=Math.hypot(x,y),
+   s=SP*(p.bo>0?1.9:1)*(b.owner===p?.94:1);p.dvx=l?x/l*s:0;p.dvy=l?y/l*s:0}
+  else{const A=prm(p),ow=b.owner;
+   if(p.role==='gk')keeper(p,A,d);else if(ow===p)carrier(p,A,d,T[1-p.team]);
+   else if(ow&&ow.team===p.team)support(p,A,d,T[1-p.team]);
+   else if(ow)defend(p,A,d,T[1-p.team]);else loose(p,A)}}
+ for(const p of all){p.vx+=(p.dvx-p.vx)*Math.min(1,dt*9);p.vy+=(p.dvy-p.vy)*Math.min(1,dt*9);
+  p.x=cl(p.x+p.vx*dt,PX+3,PR-3);p.y=cl(p.y+p.vy*dt,PY+4,PB-1);
+  const s=Math.hypot(p.vx,p.vy);if(s>8){p.fx=p.vx/s;p.fy=p.vy/s;p.an+=dt*s*.2}}
+ for(let i=0;i<all.length;i++)for(let j=i+1;j<all.length;j++){const a=all[i],c=all[j],dx=c.x-a.x,dy=c.y-a.y,l=Math.hypot(dx,dy);
+  if(l<6&&l>0){const u=(6-l)/2/l;a.x-=dx*u;a.y-=dy*u;c.x+=dx*u;c.y+=dy*u}}
+ if(b.owner){const w=b.owner;b.x=w.x+w.fx*5;b.y=w.y+w.fy*5;b.vx=w.vx;b.vy=w.vy;
+  for(const q of T[1-w.team]){if(q.tk>0||q.cd>0||q.role==='gk')continue;
+   if(Math.hypot(q.x-b.x,q.y-b.y)<7){q.tk=.7;const c=q.team===1?AP.tk:(q===ctrl?(q.bo>0?.75:.5):.3);
+    if(Math.random()<c){w.cd=.6;take(q);break}}}
+ }else{
+  b.x+=b.vx*dt;b.y+=b.vy*dt;const f=Math.exp(-K*dt);b.vx*=f;b.vy*=f;
+  if(b.y<PY+1){b.y=PY+1;b.vy=Math.abs(b.vy)}if(b.y>PB){b.y=PB;b.vy=-Math.abs(b.vy)}
+  const ing=Math.abs(b.y-CY)<GH/2;
+  if(ing){if(b.x<PX-3){goal(1);return}if(b.x>PR+3){goal(0);return}}
+  else{if(b.x<PX){b.x=PX;b.vx=Math.abs(b.vx)}if(b.x>PR){b.x=PR;b.vx=-Math.abs(b.vx)}}
+  const sp=Math.hypot(b.vx,b.vy);let bp=null,bd=99;
+  for(const p of all){if(p.cd>0)continue;const r=p.role==='gk'?7:5.5,d=Math.hypot(p.x-b.x,p.y-b.y);if(d<r&&d<bd){bd=d;bp=p}}
+  if(bp){
+   if(sp<200)take(bp);
+   else if(bp.role==='gk'){if(Math.random()<.35+.5*prm(bp).gk)take(bp);else{b.vx*=-.5;b.vy+=(Math.random()-.5)*120;bp.cd=.4}}
+   else if(b.last&&bp.team!==b.last.team){b.vx*=-.4;b.vy*=.6;bp.cd=.3}}
+ }
+ time-=dt;if(time<=0){time=0;endGame()}}
+
+/* ===== desenho ===== */
+const pitch=document.createElement('canvas');pitch.width=W;pitch.height=H;
+(function(){const c=pitch.getContext('2d'),CX=(PX+PR)/2;c.fillStyle='#2b5f31';c.fillRect(0,0,W,H);
+ for(let i=0;i<8;i++){c.fillStyle=i%2?'#3f9444':'#459c4a';c.fillRect(PX+i*PW/8,PY,PW/8,PH)}
+ c.fillStyle='#eaf4e0';c.fillRect(PX,PY,PW,1);c.fillRect(PX,PB-1,PW,1);c.fillRect(PX,PY,1,PH);c.fillRect(PR-1,PY,1,PH);c.fillRect(CX,PY,1,PH);
+ for(let a=0;a<6.3;a+=.03)c.fillRect(Math.round(CX+Math.cos(a)*22),Math.round(CY+Math.sin(a)*22),1,1);
+ c.fillRect(CX-1,CY-1,3,3);
+ c.fillRect(PX,CY-40,36,1);c.fillRect(PX,CY+40,36,1);c.fillRect(PX+36,CY-40,1,81);
+ c.fillRect(PR-36,CY-40,36,1);c.fillRect(PR-36,CY+40,36,1);c.fillRect(PR-37,CY-40,1,81);
+ [PX-9,PR].forEach(x0=>{c.fillStyle='#1d2b1f';c.fillRect(x0,CY-GH/2,9,GH);c.fillStyle='#9fb09f';
+  for(let x=0;x<9;x++)for(let y=0;y<GH;y++)if((x+y)%3===0)c.fillRect(x0+x,CY-GH/2+y,1,1);
+  c.fillStyle='#fff';c.fillRect(x0,CY-GH/2-1,9,2);c.fillRect(x0,CY+GH/2-1,9,2);c.fillRect(x0===PX-9?x0:x0+8,CY-GH/2,1,GH)});
+})();
+function dp(p){const x=Math.round(p.x)-3,y=Math.round(p.y)-8,c=p.team?'#d9382e':'#2f6fe0',
+ sh=p.role==='gk'?(p.team?'#f2a900':'#2fbf71'):c,m=Math.hypot(p.vx,p.vy)>8,f=m&&Math.floor(p.an)%2?1:0;
+ g.fillStyle='rgba(0,0,0,.28)';g.fillRect(x,y+10,7,2);
+ g.fillStyle='#f1c9a0';g.fillRect(x+f,y+9,2,2);g.fillRect(x+4-f,y+9,2,2);
+ g.fillStyle='#f4f4f4';g.fillRect(x+1,y+7,5,2);
+ g.fillStyle=sh;g.fillRect(x+1,y+3,5,4);g.fillRect(x,y+4,1,3);g.fillRect(x+6,y+4,1,3);
+ g.fillStyle='#f1c9a0';g.fillRect(x+2,y,3,3);g.fillStyle='#3a2a1a';g.fillRect(x+2,y,3,1);
+ if(p===ctrl&&state==='play'){g.fillStyle='#ffe14a';g.fillRect(x+1,y-5,5,1);g.fillRect(x+2,y-4,3,1);g.fillRect(x+3,y-3,1,1)}}
+function ring(p){const x=Math.round(p.x)-6,y=Math.round(p.y)-7;g.fillStyle='#fff';
+ g.fillRect(x,y,3,1);g.fillRect(x+9,y,3,1);g.fillRect(x,y+14,3,1);g.fillRect(x+9,y+14,3,1);
+ g.fillRect(x,y,1,3);g.fillRect(x+11,y,1,3);g.fillRect(x,y+12,1,3);g.fillRect(x+11,y+12,1,3)}
+function draw(){
+ g.drawImage(pitch,0,0);
+ all.slice().sort((a,b)=>a.y-b.y).forEach(dp);
+ const bx=Math.round(ball.x),by=Math.round(ball.y);
+ g.fillStyle='rgba(0,0,0,.3)';g.fillRect(bx-1,by+1,4,2);g.fillStyle='#fff';g.fillRect(bx-1,by-2,3,3);g.fillStyle='#222';g.fillRect(bx,by-1,1,1);
+ if(state==='play'&&ctrl){
+  if(ball.owner===ctrl){const t=bestT(ctrl);if(t)ring(t);
+   const dx=mouse.x-ctrl.x,dy=mouse.y-ctrl.y,l=Math.hypot(dx,dy);g.fillStyle='rgba(255,255,255,.7)';
+   for(let k=10;k<l&&k<90;k+=5)g.fillRect(Math.round(ctrl.x+dx/l*k),Math.round(ctrl.y+dy/l*k),1,1)}
+  const mx=Math.round(mouse.x),my=Math.round(mouse.y);g.fillStyle='#ffe14a';
+  g.fillRect(mx-4,my,3,1);g.fillRect(mx+2,my,3,1);g.fillRect(mx,my-4,1,3);g.fillRect(mx,my+2,1,3)}
 }
+function hud(){$('sc').textContent=score[0]+' x '+score[1];const t=Math.ceil(time);$('tm').textContent=Math.floor(t/60)+':'+String(t%60).padStart(2,'0');$('lv').textContent=AP.n}
+function start(k){AP=LV[k];build();score=[0,0];time=120;reset(0);state='play';menu.hidden=true;gl.hidden=true;window.focus();cv.focus()}
+function openMenu(){state='menu';$('mt').textContent='PAUSA';$('mm').textContent='Escolha o nível para (re)começar';menu.hidden=false}
 
-// ==========================================
-// 2. LÓGICA E ELEMENTOS DO JOGO (JAVASCRIPT)
-// ==========================================
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-const menuInicial = document.getElementById("menu-inicial");
-const fsBtn = document.getElementById("fs-btn");
+addEventListener('keydown',e=>{
+ if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
+ if(e.repeat)return;keys[e.code]=1;
+ if(e.code==='Space'&&state==='play')act.pass=true;
+ if(e.code==='Escape'&&state==='play')openMenu()});
+addEventListener('keyup',e=>{keys[e.code]=0});
+addEventListener('blur',()=>{for(const k in keys)keys[k]=0});
+cv.addEventListener('mousemove',e=>{const r=cv.getBoundingClientRect();mouse.x=(e.clientX-r.left)*W/r.width;mouse.y=(e.clientY-r.top)*H/r.height});
+cv.addEventListener('mousedown',()=>{cv.focus();if(state==='play')act.shot=true});
+document.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>start(b.dataset.l));
 
-let jogoRodando = false;
-let mouseX = 0, mouseY = 0;
-let golsAliado = 0, golsRival = 0;
-
-let teclas = {
-    w: false, a: false, s: false, d: false,
-    ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false
-};
-
-let bola = { x: 400, y: 250, r: 8, dono: null, velocidade: 0, dx: 0, dy: 0, timerChuteIA: 0 };
-let jogadores = [
-    // Time do Usuário (Azul) - Posições de Origem fixadas para reorganização
-    { id: 1, x: 220, y: 130, ox: 220, oy: 130, time: "aliado", cor: "#1e88e5", corPele: "#ffdbac" },
-    { id: 2, x: 220, y: 370, ox: 220, oy: 370, time: "aliado", cor: "#1e88e5", corPele: "#f1c27d" },
-    { id: 3, x: 360, y: 250, ox: 360, oy: 250, time: "aliado", cor: "#1e88e5", corPele: "#e0ac69" },
-    // Time Adversário Inteligente (Vermelho)
-    { id: 4, x: 580, y: 130, ox: 580, oy: 130, time: "rival", cor: "#e53935", corPele: "#ffdbac" },
-    { id: 5, x: 580, y: 370, ox: 580, oy: 370, time: "rival", cor: "#e53935", corPele: "#8d5524" },
-    { id: 6, x: 460, y: 250, ox: 460, oy: 250, time: "rival", cor: "#e53935", corPele: "#f1c27d" }
-];
-
-bola.dono = jogadores[2];
-
-canvas.addEventListener('mousemove', (e) => {
-    const rect = canvas.getBoundingClientRect();
-    mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
-    mouseY = (e.clientY - rect.top) * (canvas.height / rect.height);
-});
-
-window.addEventListener('keydown', (e) => {
-    if (e.key === 'w' || e.key === 'W') teclas.w = true;
-    if (e.key === 'a' || e.key === 'A') teclas.a = true;
-    if (e.key === 's' || e.key === 'S') teclas.s = true;
-    if (e.key === 'd' || e.key === 'D') teclas.d = true;
-    if (e.key in teclas) teclas[e.key] = true;
-
-    if (e.code === "Space") {
-        e.preventDefault();
-        if (bola.dono && bola.dono.time === "aliado") {
-            let dx = mouseX - bola.x;
-            let dy = mouseY - bola.y;
-            let dist = Math.sqrt(dx * dx + dy * dy);
-            
-            if (dist > 0) {
-                bola.dx = dx / dist;
-                bola.dy = dy / dist;
-                
-                // Determina se é um chute pro gol ou um passe rasteiro
-                if (mouseX > 700 && mouseY > 180 && mouseY < 320) {
-                    bola.velocidade = 12; // Chute forte pro gol!
-                } else {
-                    bola.velocidade = 8.5; // Passe controlado para os amigos
-                }
-                bola.dono = null;
-            }
-        }
-    }
-});
-
-window.addEventListener('keyup', (e) => {
-    if (e.key === 'w' || e.key === 'W') teclas.w = false;
-    if (e.key === 'a' || e.key === 'A') teclas.a = false;
-    if (e.key === 's' || e.key === 'S') teclas.s = false;
-    if (e.key === 'd' || e.key === 'D') teclas.d = false;
-    if (e.key in teclas) teclas[e.key] = false;
-});
-
-function iniciarJogo() {
-    menuInicial.style.display = "none";
-    jogoRodando = true;
-    gameLoop();
-}
-
-function reiniciarPosicoes() {
-    jogadores.forEach(p => {
-        p.x = p.ox;
-        p.y = p.oy;
-    });
-    bola.velocidade = 0;
-    bola.dx = 0; bola.dy = 0;
-    bola.x = 400; bola.y = 250;
-    bola.dono = jogadores[2];
-}
-
-function atualizar() {
-    // 1. Movimentação do Jogador Aliado Ativo
-    let jogadorAtivo = (bola.dono && bola.dono.time === "aliado") ? bola.dono : jogadores[2];
-    let moveX = 0, moveY = 0;
-    if (teclas.w || teclas.ArrowUp) moveY = -1;
-    if (teclas.s || teclas.ArrowDown) moveY = 1;
-    if (teclas.a || teclas.ArrowLeft) moveX = -1;
-    if (teclas.d || teclas.ArrowRight) moveX = 1;
-
-    if (moveX !== 0 || moveY !== 0) {
-        let comprimento = Math.sqrt(moveX * moveX + moveY * moveY);
-        jogadorAtivo.x += (moveX / comprimento) * 2.8;
-        jogadorAtivo.y += (moveY / comprimento) * 2.8;
-    }
-
-    // 2. Comportamento Físico da Bola
-    if (bola.dono) {
-        bola.x = bola.dono.x + 6;
-        bola.y = bola.dono.y + 12;
-    } else {
-        bola.x += bola.dx * bola.velocidade;
-        bola.y += bola.dy * bola.velocidade;
-        bola.velocidade *= 0.98;
-        if (bola.velocidade < 0.15) bola.velocidade = 0;
-
-        // Interceptação por proximidade
-        jogadores.forEach(p => {
-            let dist = Math.sqrt(Math.pow(p.x - bola.x, 2) + Math.pow(p.y - bola.y, 2));
-            if (dist < 20) { bola.dono = p; bola.velocidade = 0; }
-        });
-    }
-
-    // 3. INTELIGÊNCIA ARTIFICIAL ADVERSÁRIA (DIFÍCIL)
-    if (bola.dono && bola.dono.time === "rival") {
-        // IA com posse de bola: Avança de forma inteligente e decide entre passar ou chutar no seu gol
-        let atacante = bola.dono;
-        let dxGol = 20 - atacante.x;
-        let dyGol = 250 - atacante.y;
-        let distGol = Math.sqrt(dxGol * dxGol + dyGol * dyGol);
-
-        if (distGol < 280) { // Perto do gol? Chuta!
-            bola.dx = dxGol / distGol;
-            bola.dy = dyGol / distGol;
-            bola.velocidade = 10;
-            bola.dono = null;
-        } else { // Longe? Avança carregando a bola ou passa para um parceiro livre
-            atacante.x -= 1.8;
-            atacante.y += (250 - atacante.y) * 0.01;
-            
-            // Chance de tocar para um companheiro de equipe melhor posicionado
-            bola.timerChuteIA++;
-            if(bola.timerChuteIA > 120) {
-                let outrosRivais = jogadores.filter(p => p.time === "rival" && p.id !== atacante.id);
-                let parceiro = outrosRivais[Math.floor(Math.random() * outrosRivais.length)];
-                let dxP = parceiro.x - bola.x;
-                let dyP = parceiro.y - bola.y;
-                let distP = Math.sqrt(dxP*dxP + dyP*dyP);
-                bola.dx = dxP / distP; bola.dy = dyP / distP;
-                bola.velocidade = 7.5; bola.dono = null;
-                bola.timerChuteIA = 0;
-            }
-        }
-    } else {
-        // IA sem a bola: Faz marcação dinâmica por zona e persegue inteligentemente
-        jogadores.forEach(p => {
-            if (p.time === "rival") {
-                if (bola.dono && bola.dono.time === "aliado") {
-                    // Se você está avançando, um adversário te caça e os outros cercam as linhas de passe
-                    let distParaUsuario = Math.sqrt(Math.pow(bola.dono.x - p.x, 2) + Math.pow(bola.dono.y - p.y, 2));
-                    if(p.id === 6 || distParaUsuario < 180) {
-                        let dx = bola.x - p.x; let dy = bola.y - p.y;
-                        let dist = Math.sqrt(dx*dx + dy*dy);
-                        p.x += (dx / dist) * 1.9; p.y += (dy / dist) * 1.9;
-                    } else {
-                        // Voltar para cobrir sua zona de defesa original
-                        p.x += (p.ox - p.x) * 0.02; p.y += (p.oy - p.y) * 0.02;
-                    }
-                } else {
-                    // Bola rolando solta: o defensor mais próximo corre em direção a ela
-                    let dx = bola.x - p.x; let dy = bola.y - p.y;
-                    let dist = Math.sqrt(dx*dx + dy*dy);
+build();reset(0);
+let lt=0;
+function loop(t){requestAnimationFrame(loop);const dt=Math.min(.033,(t-lt)/1000||0);lt=t;
+ if(state==='play')step(dt);
+ else if(state==='goal'){gt-=dt;if(gt<=0){gl.hidden=true;reset(pk);state='play'}}
+ draw();hud()}
+requestAnimationFrame(loop);
+</script></body></html>
