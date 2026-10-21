@@ -97,10 +97,13 @@ estilos.innerHTML = `
 document.head.appendChild(estilos);
 
 // Adiciona o elemento visual do placar dinamicamente
+const gameContainer = document.getElementById("game-container");
 const placarDiv = document.createElement("div");
 placarDiv.id = "placar";
 placarDiv.innerText = "BRASIL 0 x 0 RIVAL";
-gameContainer.appendChild(placarDiv);
+if (gameContainer) {
+    gameContainer.appendChild(placarDiv);
+}
 
 // ==========================================
 // 2. LÓGICA E ELEMENTOS DO JOGO (JAVASCRIPT)
