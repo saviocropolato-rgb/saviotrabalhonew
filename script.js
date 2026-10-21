@@ -189,59 +189,45 @@ requestAnimationFrame(loop);
 
 
 
-
-document.addEventListener('DOMContentLoaded', () => {
-  const btnFullscreen = document.getElementById('fs-btn');
-  const btnIniciar = document.getElementById('btn-iniciar');
-  const menuInicial = document.getElementById('menu-inicial');
-  const canvas = document.getElementById('gameCanvas');
-
-  if (btnFullscreen) {
-    btnFullscreen.addEventListener('click', () => {
-      const container = document.getElementById('game-container');
-      if (!document.fullscreenElement) {
-        if (container.requestFullscreen) {
-          container.requestFullscreen();
-        } else if (container.webkitRequestFullscreen) {
-          container.webkitRequestFullscreen();
-        }
-      } else {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        }
-      }
-    });
-  }
-
-  if (btnIniciar) {
-    btnIniciar.addEventListener('click', () => {
-      if (menuInicial) menuInicial.style.display = 'none';
-      if (canvas) canvas.focus();
-    });
-  }
-});
-// Função para alternar Tela Cheia
-function toggleFullscreen() {
-  const elem = document.getElementById('wrap');
-  if (elem) {
-    if (!document.fullscreenElement) {
-      if (elem.requestFullscreen) {
-        elem.requestFullscreen();
-      } else if (elem.webkitRequestFullscreen) {
-        elem.webkitRequestFullscreen();
-      }
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      }
-    }
-  }
-}
-
-// Vincula o evento do botão de Tela Cheia via JS
-document.addEventListener('DOMContentLoaded', () => {
+// --- LÓGICA DE CONTROLO DOS BOTÕES E TELA CHEIA ---
+function inicializarBotoes() {
+  // Botão de Tela Cheia
   const fsBtn = document.getElementById('fs-btn');
   if (fsBtn) {
-    fsBtn.addEventListener('click', toggleFullscreen);
+    fsBtn.onclick = () => {
+      const elem = document.getElementById('wrap') || document.documentElement;
+      if (!document.fullscreenElement) {
+        if (elem.requestFullscreen) elem.requestFullscreen();
+        else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    };
   }
-});
+
+  // Botões de Dificuldade do Menu (Fácil, Médio, Difícil)
+  const botoesMenu = document.querySelectorAll('button[data-l]');
+  botoesMenu.forEach(btn => {
+    btn.onclick = () => {
+      const nivel = btn.getAttribute('data-l');
+      if (typeof LV !== 'undefined' && LV[nivel]) {
+        AP = LV[nivel];
+      }
+      
+      // Esconde o menu inicial para mostrar o jogo
+      const menu = document.getElementById('menu');
+      if (menu) menu.hidden = true;
+      
+      // Dá foco ao canvas para capturar os controlos
+      const canvas = document.getElementById('c');
+      if (canvas) canvas.focus();
+    };
+  });
+}
+
+// Executa imediatamente (sem esperar pelo evento que já passou)
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', inicializarBotoes);
+} else {
+  inicializarBotoes();
+}
