@@ -185,13 +185,15 @@ function loop(t){requestAnimationFrame(loop);const dt=Math.min(.033,(t-lt)/1000|
  else if(state==='goal'){gt-=dt;if(gt<=0){gl.hidden=true;reset(pk);state='play'}}
  draw();hud()}
 requestAnimationFrame(loop);
-</script></body>
 
 
 
-// --- LÓGICA DE CONTROLO DOS BOTÕES E TELA CHEIA ---
-function inicializarBotoes() {
-  // Botão de Tela Cheia
+
+
+
+// --- CONTROLO DOS BOTÕES E INÍCIO DA PARTIDA ---
+function inicializarJogo() {
+  // Configuração do Botão de Tela Cheia
   const fsBtn = document.getElementById('fs-btn');
   if (fsBtn) {
     fsBtn.onclick = () => {
@@ -205,29 +207,39 @@ function inicializarBotoes() {
     };
   }
 
-  // Botões de Dificuldade do Menu (Fácil, Médio, Difícil)
+  // Configuração dos Botões do Menu (Fácil, Médio, Difícil)
   const botoesMenu = document.querySelectorAll('button[data-l]');
   botoesMenu.forEach(btn => {
     btn.onclick = () => {
       const nivel = btn.getAttribute('data-l');
+      
+      // Define a dificuldade
       if (typeof LV !== 'undefined' && LV[nivel]) {
         AP = LV[nivel];
       }
       
-      // Esconde o menu inicial para mostrar o jogo
+      // Ativa o estado de jogo
+      if (typeof state !== 'undefined') {
+        state = 'play';
+      }
+
+      // Esconde a interface do menu
       const menu = document.getElementById('menu');
-      if (menu) menu.hidden = true;
-      
-      // Dá foco ao canvas para capturar os controlos
+      if (menu) {
+        menu.hidden = true;
+        menu.style.display = 'none';
+      }
+
+      // Foca no canvas para capturar os controlos
       const canvas = document.getElementById('c');
       if (canvas) canvas.focus();
     };
   });
 }
 
-// Executa imediatamente (sem esperar pelo evento que já passou)
+// Executa a inicialização
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', inicializarBotoes);
+  document.addEventListener('DOMContentLoaded', inicializarJogo);
 } else {
-  inicializarBotoes();
+  inicializarJogo();
 }
