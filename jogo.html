@@ -47,21 +47,41 @@
 
 
 <!--jogo-->
-<div id="game-container">
-<button id="fs-btn" onclick="toggleFullscreen()">TELA CHEIA</button>
+<!-- Botão Tela Cheia (sem onclick inline) -->
+<button id="fs-btn">TELA CHEIA</button>
 
-<div id="menu-inicial">
-<h2 style="color: #ffeb3b; font-size: 32px; margin-bottom: 5px;">PIXEL SOCCER</h2>
-<button class="btn" onclick="iniciarJogo()">INICIAR JOGO</button>
-<div class="controles">
-<strong>Controles:</strong><br>
-Espaço: Passa a bola | Mouse: Mira a direção
-</div>
+<!-- Container Principal do Jogo -->
+<div id="wrap">
+  <div id="hud">
+    <span id="sc">0 x 0</span>
+    <span id="tm">2:00</span>
+    <span id="lv">MÉDIO</span>
+  </div>
+
+  <canvas id="c" width="320" height="184" tabindex="0"></canvas>
+
+  <div id="gl" hidden>GOL!</div>
+
+  <div id="menu">
+    <h1 id="mt">PIXEL SOCCER</h1>
+    <p id="mm">Escolha o nível do robô e jogue!</p>
+    <div class="row">
+      <button data-l="facil">FÁCIL</button>
+      <button data-l="medio">MÉDIO</button>
+      <button data-l="dificil">DIFÍCIL</button>
+    </div>
+    <p>
+      WASD / SETAS: mover<br>
+      MOUSE: mirar<br>
+      ESPAÇO: passar<br>
+      CLIQUE: chutar<br>
+      ESC: menu
+    </p>
+  </div>
 </div>
 
-<canvas id="gameCanvas" width="800" height="500"></canvas>
-</div>
 <script src="script.js"></script>
+
 
 <!--roda pé-->
 

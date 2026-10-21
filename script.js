@@ -1,42 +1,3 @@
-<!DOCTYPE html>
-<html lang="pt-BR"><head><meta charset="utf-8"><title>Futebol Pixel</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#dfe8d3;--fg:#17261a;--card:#fffdf4;--ac:#2f6fe0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10170f;--fg:#e6f0dc;--card:#1b2619}}
-:root[data-theme="dark"]{--bg:#10170f;--fg:#e6f0dc;--card:#1b2619}
-html,body{height:100%;margin:0}
-body{background:var(--bg);color:var(--fg);font-family:'Press Start 2P',monospace,sans-serif;font-size:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
-#wrap{position:relative;width:min(96vw,calc((100vh - 90px)*1.739))}
-#hud{display:flex;justify-content:space-between;align-items:center;background:var(--card);border:4px solid var(--fg);padding:8px 12px;margin-bottom:8px;gap:8px}
-#sc{font-size:14px;color:var(--ac)}
-canvas{display:block;width:100%;image-rendering:pixelated;border:4px solid var(--fg);outline:none;cursor:crosshair;background:#2b5f31}
-#menu,#gl{position:absolute;left:0;right:0;bottom:0;top:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
-#menu{background:rgba(8,14,8,.88);color:#e6f0dc;padding:10px}
-#menu[hidden],#gl[hidden]{display:none}
-#menu h1{font-size:clamp(14px,3.4vw,24px);margin:0;color:#ffe14a;text-shadow:3px 3px 0 #b8322a}
-#menu p{margin:0;line-height:1.7;font-size:clamp(7px,1.5vw,10px)}
-.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-button{font:inherit;font-size:clamp(9px,1.8vw,12px);padding:12px 16px;background:#ffe14a;color:#1a1a1a;border:0;cursor:pointer;box-shadow:0 5px 0 #a8871a,0 0 0 3px #1a1a1a;transition:transform .08s}
-button:hover{transform:translateY(-2px)}button:active{transform:translateY(3px);box-shadow:0 2px 0 #a8871a,0 0 0 3px #1a1a1a}
-button[data-l=medio]{background:#ff9f43;box-shadow:0 5px 0 #a8601a,0 0 0 3px #1a1a1a}
-button[data-l=dificil]{background:#ff5d5d;box-shadow:0 5px 0 #a82a2a,0 0 0 3px #1a1a1a}
-#gl{pointer-events:none;font-size:clamp(20px,6vw,48px);color:#ffe14a;text-shadow:4px 4px 0 #b8322a;animation:pop .5s ease-out}
-@keyframes pop{0%{transform:scale(.2) rotate(-8deg);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
-</style></head><body>
-<div id="wrap">
- <div id="hud"><span id="sc">0 x 0</span><span id="tm">2:00</span><span id="lv">MÉDIO</span></div>
- <canvas id="c" width="320" height="184" tabindex="0"></canvas>
- <div id="gl" hidden>GOOOL!</div>
- <div id="menu">
-  <h1 id="mt">FUTEBOL PIXEL</h1>
-  <p id="mm">Escolha o nível do robô e jogue!</p>
-  <div class="row"><button data-l="facil">FÁCIL</button><button data-l="medio">MÉDIO</button><button data-l="dificil">DIFÍCIL</button></div>
-  <p>WASD / SETAS: mover<br>MOUSE: mirar<br>ESPAÇO: passar (sem bola: arrancada)<br>CLIQUE: chutar<br>ESC: menu</p>
- </div>
-</div>
-<script>
 const W=320,H=184,PX=12,PY=12,PW=296,PH=160,PR=PX+PW,PB=PY+PH,CY=PY+PH/2,GH=44,K=1.3,SP=62;
 const cv=document.getElementById('c'),g=cv.getContext('2d');g.imageSmoothingEnabled=false;
 const $=i=>document.getElementById(i),menu=$('menu'),gl=$('gl');
@@ -224,4 +185,63 @@ function loop(t){requestAnimationFrame(loop);const dt=Math.min(.033,(t-lt)/1000|
  else if(state==='goal'){gt-=dt;if(gt<=0){gl.hidden=true;reset(pk);state='play'}}
  draw();hud()}
 requestAnimationFrame(loop);
-</script></body></html>
+</script></body>
+
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  const btnFullscreen = document.getElementById('fs-btn');
+  const btnIniciar = document.getElementById('btn-iniciar');
+  const menuInicial = document.getElementById('menu-inicial');
+  const canvas = document.getElementById('gameCanvas');
+
+  if (btnFullscreen) {
+    btnFullscreen.addEventListener('click', () => {
+      const container = document.getElementById('game-container');
+      if (!document.fullscreenElement) {
+        if (container.requestFullscreen) {
+          container.requestFullscreen();
+        } else if (container.webkitRequestFullscreen) {
+          container.webkitRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    });
+  }
+
+  if (btnIniciar) {
+    btnIniciar.addEventListener('click', () => {
+      if (menuInicial) menuInicial.style.display = 'none';
+      if (canvas) canvas.focus();
+    });
+  }
+});
+// Função para alternar Tela Cheia
+function toggleFullscreen() {
+  const elem = document.getElementById('wrap');
+  if (elem) {
+    if (!document.fullscreenElement) {
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+      } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  }
+}
+
+// Vincula o evento do botão de Tela Cheia via JS
+document.addEventListener('DOMContentLoaded', () => {
+  const fsBtn = document.getElementById('fs-btn');
+  if (fsBtn) {
+    fsBtn.addEventListener('click', toggleFullscreen);
+  }
+});
