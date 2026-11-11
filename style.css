@@ -373,3 +373,11 @@ canvas#c {
   color: #ffe14a;
   text-shadow: 4px 4px 0 #b8322a;
 }
+
+/*sobre*/
+.sobre {
+  text-align: center; 
+  background: #FFD700;
+  margin: 0;
+  padding: 0;
+}
