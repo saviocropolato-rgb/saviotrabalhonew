@@ -375,9 +375,11 @@ canvas#c {
 }
 
 /*sobre*/
+
 .sobre {
   text-align: center; 
   background: #ffe14a;
   margin: 0;
   padding: 0;
+  font-size: 22px;
 }
