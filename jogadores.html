@@ -39,14 +39,32 @@
 
 <!--parte do java script-->
 
-<form action="jogadores.html"method="get">
-<input type="text" 
-name="busca"
-placeholder="Procura nome do jogadores...">
-<button type="submit">Buscar</button>
-</form>
-<input type="text" id="pesquisa" onkeyup="filtrarJogadores()" placeholder="Procurar jogador...">
 
+<input type="text" id="pesquisa" onkeyup="filtrarJogadores()" placeholder="Procurar jogador...">
+<script>
+function filtrarJogadores() {
+const termo = document.getElementById("pesquisa").value.toLowerCase();
+const jogadores = document.getElementsByClassName("estudante-div");
+
+for (let i = 0; i < jogadores.length; i++) {
+const nomeDoJogador = jogadores[i].innerText.toLowerCase();
+      
+ if (nomeDoJogador.includes(termo)) {
+jogadores[i].style.display = "";
+  } else {
+jogadores[i].style.display = "none";
+  }
+ }
+}
+
+const parametros = new URLSearchParams(window.location.search);
+const buscaDoInicio = parametros.get("busca");
+
+if (buscaDoInicio) {
+document.getElementById("pesquisa").value = buscaDoInicio;
+filtrarJogadores();
+}
+</script>
 
 <!--Seção estudantes é a parte do paragrafo 2 da página-->
 
