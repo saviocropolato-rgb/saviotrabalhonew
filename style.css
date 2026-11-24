@@ -383,3 +383,44 @@ canvas#c {
   padding: 0;
   font-size: 22px;
 }
+
+/*parte da java script*/
+.area-busca {
+text-align: center;
+margin: 25px 0;
+}
+
+
+.campo-busca {
+padding: 12px 20px;
+width: 280px;
+font-size: 16px;
+border: 3px solid #004d25;
+border-radius: 25px;
+outline: none;
+background-color: #ffffff;
+color: #004d25;
+}
+
+.campo-busca:focus {
+border-color: #002776;
+box-shadow: 0 0 8px rgba(0, 39, 118, 0.4);
+}
+
+.botao-busca {
+padding: 12px 24px;
+font-size: 16px;
+font-weight: bold;
+background-color: #ffcc00;
+color: #004d25;
+border: 3px solid #004d25;
+border-radius: 25px;
+cursor: pointer;
+margin-left: 8px;
+transition: 0.3s;
+}
+
+.botao-busca:hover {
+background-color: #004d25;
+color: #ffcc00;
+}
